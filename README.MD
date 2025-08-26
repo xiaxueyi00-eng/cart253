@@ -4,5 +4,5 @@ Program :compuutation Arts
 ## About this Repoaitory
 This reportory will contain 
 - Class exercises
-##Image 
+## Image 
 The Photo IMG_9432.jpeg
