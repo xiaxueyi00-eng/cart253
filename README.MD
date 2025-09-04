@@ -1,8 +1,9 @@
 # CART253 Repository
-## My Goals For CART253
 Name: xueyi
 Program :compuutation Arts
-## About this Repository
+## My Goals For CART253
+-  Learn the basics of creative coding
+## About This Repository
 This repository will contain 
 - Class exercises
 ## Image 
