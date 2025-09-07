@@ -4,3 +4,4 @@ name: xueyi program: comptation art
  This reportory will contain
 - class exercises
 ## Image
+![brain image](https://raw.githubusercontent.com/xiaxueyi00-eng/cart253/main/IMG_9432.jpeg)
