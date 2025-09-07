@@ -21,10 +21,11 @@ function setup() {
 */
 
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(500, 500);
 }
 
 function draw() {
-    background(220);
-    ellipse(mouseX, mouseY, 80, 80);
+    background(0, 0, 220); // blue background
+    ellipse(mouseX, mouseY, 100, 100); // circle that follows mouse
+
 }
