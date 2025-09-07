@@ -1,5 +1,5 @@
 # CART253 Repository
-Name: xueyi
+Name:  xueyi
 Program :compuutation Arts
 ## My Goals For CART253
 -  Learn the basics of creative coding
