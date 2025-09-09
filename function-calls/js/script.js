@@ -12,21 +12,45 @@
 
 "use strict";
 
-/**
- *  Creates the canvas for our masterpiece
+/** 
+ * Creates a square canvas
  */
-
 function setup() {
-    // Create the canvas at a standard resolution 
-    createCanvas(640, 480);
+    createCanvas(640, 640);
 }
+
 /**
-* Draws the writer's desktop and a blank plece of paper
-*/
+  * Displays the record
+  */
 function draw() {
-    //The pink desktop
-    background(255, 100, 100);
-    //The plece of paper
-    rect(200, 80, 240, 320);
+    //Yellow background
+    background(255, 204, 0);
+
+    // The main part of the record
+    push()
+    fill(255, 182, 193);
+    stroke(0);
+    ellipse(320, 320, 480);
+    pop();
+
+    // The label on the record
+    push();
+    fill(0, 0, 255);
+    noStroke();
+    ellipse(320, 320, 140);
+    pop();
+
+    //The hole in the recors
+    push()
+    fill("000000");
+    nostroke();
+    ellipse(320, 320, 20)
+    pop();
 }
+
+
+
+
+
+
 
