@@ -24,6 +24,8 @@ function draw() {
     drawGround();
     drawFlysheet();
     drawFlysheetDoor();
+
+    drawHuman();
     drawHumanHead();
     drawHumanBody();
     drawHumanArms();
@@ -77,6 +79,12 @@ function drawFlysheetDoor() {
     rectMode(CENTER);
     rect(300, 370, 50, 60);
     pop();
+
+}
+
+function drawHuman() {
+    push();
+    translate(150, 0);
 
 }
 
