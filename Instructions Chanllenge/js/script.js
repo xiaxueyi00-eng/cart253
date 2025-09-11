@@ -30,6 +30,7 @@ function draw() {
     drawHumanBody();
     drawHumanArms();
     drawHumanLegs();
+    drawHumanEyes();
 }
 
 
@@ -119,4 +120,13 @@ function drawHumanLegs() {
     line(300, 320, 300, 400);
     line(340, 320, 340, 400);
     pop();
-}   
+}
+
+function drawHumanEyes() {
+    push();
+    fill(0);
+    stroke(0);
+    circle(305, 190, 10);
+    circle(335, 190, 10);
+    pop();
+}
