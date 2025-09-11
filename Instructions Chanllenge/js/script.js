@@ -1,13 +1,10 @@
 /**
- * Title of Project
- * Author Name
- * 
- * HOW EMBARRASSING! I HAVE NO DESCRIPTION OF MY PROJECT!
- * PLEASE REMOVE A GRADE FROM MY WORK IF IT'S GRADED!
- */
+ * Instructions Challenge
+ * xueyi
+ * Draw a man and his house 
 
 /**
- * 
+ * Draws the house
  */
 
 function setup() {
@@ -16,7 +13,8 @@ function setup() {
 
 
 /**
- * OOPS I DIDN'T DESCRIBE WHAT MY DRAW DOES!
+ * 
+ * Draws a house and a man
 */
 function draw() {
     drawSky();
@@ -72,7 +70,9 @@ function drawFlysheet() {
     triangle(200, 400, 300, 150, 400, 400);
     pop();
 }
-
+/**
+ * Draws the flysheet door
+ */
 function drawFlysheetDoor() {
     push();
     fill(255, 0, 0);
@@ -82,20 +82,27 @@ function drawFlysheetDoor() {
     pop();
 
 }
-
+/**
+ * Draws the human
+ */
 function drawHuman() {
     push();
     translate(150, 0);
 
 }
 
+/**
+ * Draws the human head
+ */
 function drawHumanHead() {
     push();
     fill(255, 220, 177);
     circle(320, 180, 80);
     pop();
 }
-
+/**
+ * Draws the human body
+ */
 function drawHumanBody() {
     push();
     fill(0, 0, 255);
@@ -104,6 +111,9 @@ function drawHumanBody() {
     pop();
 }
 
+/**
+ * Draws the human arms
+ */
 function drawHumanArms() {
     push();
     stroke(255, 220, 177);
@@ -112,7 +122,9 @@ function drawHumanArms() {
     line(360, 260, 400, 300);
     pop();
 }
-
+/**
+ * Draws the human legs
+ */
 function drawHumanLegs() {
     push();
     stroke(0, 0, 255);
@@ -121,7 +133,9 @@ function drawHumanLegs() {
     line(340, 320, 340, 400);
     pop();
 }
-
+/**
+ * Draws the human eyes
+ */
 function drawHumanEyes() {
     push();
     fill(0);
