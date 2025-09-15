@@ -1,6 +1,6 @@
 /**
  * Instructions Challenge
- * xueyi
+ * xueyi olivia
  * Draw a man and his house 
 
 /**
