@@ -8,18 +8,6 @@
 
 "use strict";
 
-/**
- * OH LOOK I DIDN'T DESCRIBE SETUP!!
-*/
-
-/**
- * Mr. Furious
- * Pippin Barr
- *
- * A guy who becomes visibly furious!
- */
-
-"use strict";
 
 // Our friend Mr. Furious
 let mrFurious = {
