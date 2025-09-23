@@ -33,7 +33,7 @@ function draw() {
 
     // Face
     fill(255, 220, 200);
-    ellipse(width / 2, height / 2, 400, 600);
+    ellipse(450, 450, 400, 600);
 
     // Eyes
     drawEyes();
@@ -41,7 +41,10 @@ function draw() {
     drawNose();
     // mouth
     drawMouth();
-
+    //Neck
+    drawNeck();
+    //Hair
+    drawHair();
 
     // Blush color change gradually
     blush.fill.g -= 0.5;
@@ -83,7 +86,7 @@ function drawEyes() {
     // Left eye
     fill(255);               // white of the eye
     ellipse(350, 360, 80, eyeHeight);
-    fill(0);                 // pupil
+    fill(0);
     ellipse(350, 360, 40, eyeHeight / 2);
 
     // Right eye
@@ -98,9 +101,9 @@ function drawNose() {
     fill(255, 200, 180);
     noStroke();
     triangle(
-        460, 400,   // top
-        430, 500,   // bottom left
-        490, 500    // bottom right
+        460, 400,
+        430, 500,
+        490, 500
     );
 }
 
@@ -108,5 +111,26 @@ function drawNose() {
 function drawMouth() {
     fill(225, 0, 0);
     noStroke();
-    rectMode(650, 120, 40, 10);
+    rect(410, 580, 100, 40, 10);
+}
+
+function drawNeck() {
+    fill(255, 220, 200);
+    noStroke();
+    quad(
+        400, 700,
+        500, 700,
+        590, 900,
+        320, 900,
+    )
+    ellipse(460, 900, 600, 140);
+}
+function drawHair() {
+    fill(0, 0, 0)
+    arc(450, 280, 360, 300, PI, TWO_PI, CHORD);
+    // Left 
+    triangle(280, 230, 150, 520, 260, 550);
+
+    //Right
+    triangle(620, 230, 750, 500, 650, 550);
 }
