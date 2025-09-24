@@ -15,11 +15,11 @@ let blush = {
     y: 480,
     size: 120,
 
-    // Initial color
+    // Blush: using fill() to create a soft pink tone on the cheeks
     fill: {
-        r: 255,
-        g: 180,
-        b: 180
+        r: 250,
+        g: 170,
+        b: 170
     }
 };
 
@@ -39,7 +39,7 @@ function draw() {
     drawEyes();
     // Nose
     drawNose();
-    // mouth
+    // Mouth
     drawMouth();
     //Neck
     drawNeck();
