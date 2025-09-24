@@ -74,7 +74,7 @@ function draw() {
 // Functions outside draw()
 //
 
-// Eyes
+// Draw blinking Eyes
 function drawEyes() {
     let eyeHeight = 80; // default: open
 
