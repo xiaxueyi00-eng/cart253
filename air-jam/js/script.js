@@ -109,19 +109,18 @@ function drawNose() {
 
 // Draw a rectangular mouth
 function drawMouth() {
-    //upper lip
-    fill(225, 153, 153);
-    noStroke();
-    circle(458, 600, 90);
-    //lower lip
-    fill(225, 153, 153);
-    noStroke();
-    circle(458, 580, 90);
+
     // mouth interior
     fill(225, 0, 0);
     noStroke();
-    circle(458, 590, 80);
+
+
+    let mouthWidth = map(mouseX, 0, width, 50, 150);
+    let mouthHeight = map(mouseY, 0, height, 20, 80);
+
+    ellipse(450, 600, mouthWidth, mouthHeight);
 }
+
 
 // Draw the neck using a quad and ellipse for the base
 function drawNeck() {
