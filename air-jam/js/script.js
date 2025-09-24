@@ -96,7 +96,7 @@ function drawEyes() {
     ellipse(550, 360, 40, eyeHeight / 2);
 }
 
-// Nose
+// Draw a simple triangular nose
 function drawNose() {
     fill(255, 200, 180);
     noStroke();
@@ -107,7 +107,7 @@ function drawNose() {
     );
 }
 
-// Mouth
+// Draw a rectangular mouth
 function drawMouth() {
     fill(225, 0, 0);
     noStroke();
@@ -125,6 +125,8 @@ function drawNeck() {
     )
     ellipse(460, 900, 600, 140);
 }
+// Draw stylized hair using arc and triangle shapes
+
 function drawHair() {
     fill(0, 0, 0)
     arc(450, 280, 360, 300, PI, TWO_PI, CHORD);
