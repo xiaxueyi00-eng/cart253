@@ -71,10 +71,7 @@ function draw() {
     ellipse(blush.xRight, blush.y, blush.size, blush.size / 1.5);
 }
 
-// Functions outside draw()
-//
-
-// Draw blinking Eyes
+// Draw blinking eyes (no mouse tracking)
 function drawEyes() {
     let eyeHeight = 80; // default: open
 
@@ -84,7 +81,7 @@ function drawEyes() {
     }
 
     // Left eye
-    fill(255);               // white of the eye
+    fill(255); // white of the eye
     ellipse(350, 360, 80, eyeHeight);
     fill(0);
     ellipse(350, 360, 40, eyeHeight / 2);
@@ -95,6 +92,8 @@ function drawEyes() {
     fill(0);
     ellipse(550, 360, 40, eyeHeight / 2);
 }
+
+
 
 // Draw a simple triangular nose
 function drawNose() {
