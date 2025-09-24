@@ -1,11 +1,11 @@
 /**
  * Self-Portrait
  * xueyi xia
- * 
- * HOW EMBARRASSING! I HAVE NO DESCRIPTION OF MY PROJECT!
- * PLEASE REMOVE A GRADE FROM MY WORK IF IT'S GRADED!
+ * This is a self-portrait from the code. 
+ * I used p5.js to make the simple motifs combine with the face hallmark.
+ * Blush gradient effect and the place little test shows both learning and creativity
  */
-
+s
 "use strict";
 
 let blush = {
