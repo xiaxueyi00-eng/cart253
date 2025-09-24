@@ -104,14 +104,16 @@ function drawNose() {
         430, 500,
         490, 500
     );
+
 }
 
 // Draw a rectangular mouth
 function drawMouth() {
     fill(225, 0, 0);
     noStroke();
-    rect(410, 580, 100, 40, 10);
+    circle(458, 590, 90);
 }
+
 // Draw the neck using a quad and ellipse for the base
 function drawNeck() {
     fill(255, 220, 200);
