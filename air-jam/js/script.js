@@ -5,7 +5,7 @@
  * I used p5.js to make the simple motifs combine with the face hallmark.
  * Blush gradient effect and the place little test shows both learning and creativity
  */
-s
+
 "use strict";
 
 let blush = {
@@ -113,7 +113,7 @@ function drawMouth() {
     noStroke();
     rect(410, 580, 100, 40, 10);
 }
-
+// Draw the neck using a quad and ellipse for the base
 function drawNeck() {
     fill(255, 220, 200);
     noStroke();
