@@ -33,7 +33,7 @@ function draw() {
 
     // Face
     fill(255, 220, 200);
-    ellipse(450, 450, 400, 600);
+    ellipse(450, 420, 400, 600);
 
     // Eyes
     drawEyes();
@@ -101,8 +101,9 @@ function drawNose() {
     noStroke();
     triangle(
         460, 400,
-        430, 500,
-        490, 500
+        450, 390,
+        400, 500,
+        500, 500
     );
 
 }
@@ -126,12 +127,12 @@ function drawNeck() {
     fill(255, 220, 200);
     noStroke();
     quad(
-        400, 700,
-        500, 700,
+        380, 700,
+        520, 700,
         590, 900,
         320, 900,
     )
-    ellipse(460, 900, 600, 140);
+    ellipse(450, 900, 680, 200);
 }
 // Draw stylized hair using arc and triangle shapes
 
