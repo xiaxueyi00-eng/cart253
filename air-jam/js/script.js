@@ -114,7 +114,6 @@ function drawMouth() {
     fill(225, 0, 0);
     noStroke();
 
-
     let mouthWidth = map(mouseX, 0, width, 50, 150);
     let mouthHeight = map(mouseY, 0, height, 20, 80);
 
