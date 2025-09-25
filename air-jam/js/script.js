@@ -100,7 +100,6 @@ function drawNose() {
     fill(255, 200, 180);
     noStroke();
     triangle(
-        460, 400,
         450, 390,
         400, 500,
         500, 500
