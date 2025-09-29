@@ -8,32 +8,33 @@
 
 "use strict";
 
-let blush = {
-    // Position and size
-    xLeft: 300,
-    xRight: 600,
-    y: 480,
-    size: 120,
+let skinColor;
+let blushColor;
+let t = 0;
+let speed;
 
-    // Blush: using fill() to create a soft pink tone on the cheeks
-    fill: {
-        r: 250,
-        g: 170,
-        b: 170
-    }
-};
+
 
 function setup() {
     createCanvas(900, 900);
-}
-
-function draw() {
-    // Background
-    background(255, 230, 240);
+    skinColor = color(255, 220, 200);//skin
+    blushColor = color(255, 170, 170);//pink blush
 
     // Face
     fill(255, 220, 200);
     ellipse(450, 420, 400, 600);
+
+    // Draw blush (two sides)
+    speed = 1.0 / 120.0
+    t += speed;
+    if (t < 0.20)
+        t += speed;
+
+    let currentBlush = lerpColor(skinColor, blushColor, t);
+    fill(currentBlush);
+    noStroke();
+    ellipse(330, 480, 120, 100);// left brush
+    ellipse(580, 480, 120, 100);//right brush
 
     // Eyes
     drawEyes();
@@ -46,29 +47,6 @@ function draw() {
     //Hair
     drawHair();
 
-    // Blush color change gradually
-    blush.fill.g -= 0.5;
-    blush.fill.b -= 0.5;
-
-    // Constrain blush color range to avoid turning black
-    blush.fill.g = constrain(blush.fill.g, 80, 180);
-    blush.fill.b = constrain(blush.fill.b, 80, 180);
-
-    // Make blush move left and right slightly
-    let offset = 10;
-    if (frameCount % 40 === 0) {
-        blush.xLeft += offset;
-        blush.xRight -= offset;
-    } else if (frameCount % 40 === 20) {
-        blush.xLeft -= offset;
-        blush.xRight += offset;
-    }
-
-    // Draw blush (two sides)
-    noStroke();
-    fill(blush.fill.r, blush.fill.g, blush.fill.b);
-    ellipse(blush.xLeft, blush.y, blush.size, blush.size / 1.5);
-    ellipse(blush.xRight, blush.y, blush.size, blush.size / 1.5);
 }
 
 // Draw blinking eyes (no mouse tracking)
@@ -82,15 +60,15 @@ function drawEyes() {
 
     // Left eye
     fill(255); // white of the eye
-    ellipse(350, 360, 80, eyeHeight);
+    ellipse(350, 350, 80, eyeHeight);
     fill(0);
-    ellipse(350, 360, 40, eyeHeight / 2);
+    ellipse(350, 350, 30, eyeHeight / 2);
 
     // Right eye
     fill(255);
-    ellipse(550, 360, 80, eyeHeight);
+    ellipse(550, 350, 80, eyeHeight);
     fill(0);
-    ellipse(550, 360, 40, eyeHeight / 2);
+    ellipse(550, 350, 30, eyeHeight / 2);
 }
 
 
@@ -137,7 +115,7 @@ function drawNeck() {
 
 function drawHair() {
     fill(0, 0, 0)
-    arc(450, 280, 360, 300, PI, TWO_PI, CHORD);
+    arc(450, 280, 360, 330, PI, TWO_PI, CHORD);
     // Left 
     triangle(280, 230, 150, 520, 260, 550);
 
