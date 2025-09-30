@@ -14,22 +14,22 @@ This project creates a humorous self-portrait using p5.js.
 Using `lerpColor()`, the blush color progressively shifts over time. By gradually increasing the variable t, the blush color smoothly transitions from skinColor to blushColor.
 
 -	Blinking eyes
-Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The group project from Week 3 served as the inspiration for this reasoning. I modified the same idea to mimic natural blinking rather than creating a character move.  
+Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The Week 3 group project give me this idea. I made the eyes blink naturally instead of moving the character.
 
 -	Interactivity
-The mouth ts width follows mouseX, and its height follows mouseY. This makes the portrait more playful and interactive.
+The mouth ts width follows `mouseX`, and its height follows `mouseY`. This makes the portrait more playful and interactive.
 
 -	Hair
- I had never used the arc() function for the hair before. Triangles and semicircles are used to create the hair.  Triangles are used for hair on the sides, and semicircles are used for bangs.  By changing the angles, curved shapes were created that more naturally frame the face.
+ I had never used the `arc()` function for the hair before. `triangles（）` and semicircles are used to create the hair.  Triangles are used for hair on the sides, and semicircles are used for bangs.  By changing the angles, curved shapes were created that more naturally frame the face.
 
 - Heart background
-The heart is made of two circles and one triangle. I used scale() with mouseWheel() for the first time to make it dynamically resize.it automatically resizes with the mouse wheel.
+The heart is made of two circles and one triangle. I used` scale()` with `mouseWheel()` for the first time to make it dynamically resize.it automatically resizes with the mouse wheel.
 
 — Nose
 I used triangles made a cute nose.
 
 - Shouder and Neck
-I made  the neck using a quad () to join the head and body.  I used an ellipse () to be the shoulders.
+I made  the neck using a `quad() `to join the head and body.  I used an `ellipse()` to be the shoulders.
 ## Screenshot(s)
 
 This bit should have some images of the program running so that the reader has a sense of what it looks like. 
