@@ -10,7 +10,8 @@ This project uses p5.js to create a playful self-portrait.
  The face is constructed from simple geometric shapes (triangle, quad, ellipse, and arc), and it is adorned with a heart-shaped background..  
 
 -	Blush
-Using `lerpColor()`, the blush color progressively shifts over time. As a result, the portrait has a subtle animation effect that gives it life
+Using `lerpColor()`, the blush color progressively shifts over time.By gradually increasing the variable t, the blush color smoothly transitions from skinColor to blushColor,
+ As a result, the portrait has a subtle animation effect that gives it life。
 -	Blinking eyes
 Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The group project from Week 3 served as the inspiration for this reasoning. I modified the same idea to mimic natural blinking rather than creating a character move.  
 -	Interactivity
@@ -21,7 +22,6 @@ For the hair, I used the arc() function, which I had never done before.  Curved 
 The heart is made of two circles and one triangle. I used scale() with mouseWheel() for the first time to make it dynamically resize.
 I used the scale() function for the heart, which was new to me.It automatically resizes with the mouse wheel.
 ⸻
-u
 ## Screenshot(s)
 
 This bit should have some images of the program running so that the reader has a sense of what it looks like. 
