@@ -17,7 +17,7 @@ Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. T
 -	Interactivity
 The mouth changes size with the mouse. Its width follows mouseX, and its height follows mouseY. This makes the portrait more playful and interactive.
 -	Hair
-For the hair, I used the arc() function, which I had never done before.  Curved shapes that more naturally frame the face were produced by adjusting the angles.
+For the hair, I used the arc() function, which I had never done before. The hair is made with semicircles and triangles. The semicircle is used as bangs, and the triangles are placed on the sides as hair. Curved shapes that more naturally frame the face were produced by adjusting the angles.
 -	Heart background
 The heart is made of two circles and one triangle. I used scale() with mouseWheel() for the first time to make it dynamically resize.
 I used the scale() function for the heart, which was new to me.It automatically resizes with the mouse wheel.
@@ -34,7 +34,9 @@ This bit should attribute any code, assets or other elements used taken from oth
 
 > - This project uses [p5.js](https://p5js.org).
 > - The Week 3 group assignment served as the inspiration for the blinking eyes (using `frameCount` with conditionals) concept.  
-> - Using `scale()` and `mouseWheel()`, dynamic resizing was added to the heart shape, which was inspired by basic geometric combinations (two circles and one triangle).  
+> - Using `scale()` and `mouseWheel()`, dynamic resizing was added to the heart shape, which was inspired by basic geometric combinations (two circles and one triangle). 
+
+
 
 
 This bit should include the license you want to apply to your work. 
