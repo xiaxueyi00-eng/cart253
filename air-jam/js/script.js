@@ -7,12 +7,14 @@
  */
 
 "use strict";
-
+//blush
 let skinColor;
 let blushColor;
 let t = 0;
 let speed;
 
+//heart
+let heartScale = 1;
 
 
 function setup() {
@@ -23,20 +25,14 @@ function setup() {
 
 function draw() {
     background(255, 204, 204)
-    // Mouse click color chang
-    fill(255, 100, 150);
-    noStroke();
-    // When pressed → Red
-    if (mouseIsPressed) {
-        fill(225, 0, 0);
-        // Default → Pink
-    } else {
-        fill(255, 100, 150);
-    }
+
     // Heart: two circles + one triangle (centered)
+    scale(heartScale);
+    fill(225, 0, 0);
     ellipse(350, 350, 570, 500);//left 
     ellipse(550, 370, 570, 570)//right
     triangle(150, 520, 815, 480, 460, 990);
+    pop();
 
 
     // Face
@@ -66,8 +62,20 @@ function draw() {
     drawNeck();
     //Hair
     drawHair();
+    push();
+    translate(width / 2, height / 2);
+    scale(heartScale);
+
 
 }
+
+// --- Scroll to zoom heart ---
+function mouseWheel(event) {
+    heartScale += event.delta * -0.001;
+    heartScale = constrain(heartScale, 0.5, 2);
+}
+
+
 
 // Draw blinking eyes (no mouse tracking)
 function drawEyes() {
