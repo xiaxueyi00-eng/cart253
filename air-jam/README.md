@@ -2,7 +2,7 @@
 <title>Blishing Girl</title>
 AUTHOR NAME:  xueyi
 
-[View this project online] GitHub Pages Link : https://github.com/xiaxueyi00-eng/cart253/tree/main/air-jam
+[View this project online]  Link : https://xiaxueyi00-eng.github.io/cart253/air-jam/
 
 ## Description
 This project creates a humorous self-portrait using p5.js.
@@ -10,14 +10,19 @@ This project creates a humorous self-portrait using p5.js.
  The face has a heart-shaped background and is made up of basic geometric shapes like triangles, quads, ellipses, and arcs.
 
 How to interact
-- Mouth: You can move the mouse up or down to adjust the height of the mouth, and left or right to make it wider. 
+- Mouth: You can move the mouse up or down to adjust the height of the mouth, and left or right to make it wider.
+
 -  Eyes: The eyes produce a lively and natural expression by blinking on their own every few seconds. 
- 
+
+ - Blush : With lerpColor(), the cheeks gradually change color over time. You only need to refresh to see the gradient effect because this occurs automatically.
+
 - Heart background: Use the mouse wheel to dynamically enlarge or contract the heart.
+
 
 Features
 - Blush: A gentle animated gradient is produced by utilizing lerpColor() to gradually change the cheeks' color. 
-- Hair: The bangs and side hair that frame the face are a combination of arcs, triangles, and semicircles. - Nose, neck, and shoulders: The portrait is finished with a small triangular nose, a quad for the neck, and an ellipse for the shoulders.
+- Hair: The bangs and side hair that frame the face are a combination of arcs, triangles, and semicircles.
+-  Nose, neck, and shoulders: The portrait is finished with a small triangular nose, a quad for the neck, and an ellipse for the shoulders.
 
 Experience
 
