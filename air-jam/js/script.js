@@ -29,9 +29,9 @@ function draw() {
     // Heart: two circles + one triangle (centered)
     scale(heartScale);
     fill(225, 0, 0);
-    ellipse(350, 350, 570, 500);//left 
-    ellipse(550, 370, 570, 570)//right
-    triangle(150, 520, 815, 480, 460, 990);
+    ellipse(350, 355, 580, 580);//left 
+    ellipse(550, 370, 580, 600)//right
+    triangle(145, 560, 820, 487, 450, 990);
     pop();
 
 
