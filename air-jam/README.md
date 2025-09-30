@@ -41,7 +41,7 @@ This bit should have some images of the program running so that the reader has a
 This bit should attribute any code, assets or other elements used taken from other sources. For example:
 
 > - This project uses [p5.js](https://p5js.org).
-> - The Week 3 group assignment served as the inspiration for the blinking eyes (using `frameCount` with conditionals) concept.  
+> - The Week 3 group assignment inspired the blinking eyes concept (using frameCount with conditionals).
 > - Using `scale()` and `mouseWheel()`, dynamic resizing was added to the heart shape, which was inspired by basic geometric combinations (two circles and one triangle). 
 > - Usine `lerpColor()` from [p5.js](https://p5js.org).
 
