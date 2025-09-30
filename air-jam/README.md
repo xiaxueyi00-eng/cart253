@@ -19,7 +19,9 @@ The mouth changes size with the mouse. Its width follows mouseX, and its height 
 For the hair, I used the arc() function, which I had never done before.  Curved shapes that more naturally frame the face were produced by adjusting the angles.
 -	Heart background
 The heart is made of two circles and one triangle. I used scale() with mouseWheel() for the first time to make it dynamically resize.
-I used the scale() function for the heart, which was new to me.
+I used the scale() function for the heart, which was new to me.It automatically resizes with the mouse wheel.
+⸻
+u
 ## Screenshot(s)
 
 This bit should have some images of the program running so that the reader has a sense of what it looks like. 
