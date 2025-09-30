@@ -7,6 +7,7 @@
  */
 
 "use strict";
+
 // --- Global variables --
 let skinColor;
 let blushColor;
@@ -25,12 +26,11 @@ function setup() {
 function draw() {
     background(255, 204, 204)
 
-    // Heart: two circles + one triangle (centered)
-    scale(heartScale);
-    // Move origin to the canvas center
+    // --- Heart (with original coordinates, scalable) ---
+    push();
     translate(width / 2, height / 2);
-    // Scale according to heartScale
     scale(heartScale);
+    translate(-width / 2, -height / 2);
     //rad heart
     fill(225, 0, 0);
     ellipse(350, 355, 580, 580);//left 
@@ -72,8 +72,8 @@ function draw() {
 }
 // --- Mouse wheel: zoom in/out heart ---
 function mouseWheel(event) {
-    heartScale += event.delta * -0.001;
-    heartScale = constrain(heartScale, 0.5, 2);
+    heartScale += event.delta * -0.001;// Control scaling with mouse wheel
+    heartScale = constrain(heartScale, 0.5, 2);// Limit scaling range
 }
 
 
