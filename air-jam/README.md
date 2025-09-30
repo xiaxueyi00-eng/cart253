@@ -9,27 +9,20 @@ This project creates a humorous self-portrait using p5.js.
  It combines ideas discussed in class with experiments using recently learned functions.
  The face has a heart-shaped background and is made up of basic geometric shapes like triangles, quads, ellipses, and arcs.
 
+How to interact
+- Mouth: You can move the mouse up or down to adjust the height of the mouth, and left or right to make it wider. 
+-  Eyes: The eyes produce a lively and natural expression by blinking on their own every few seconds. 
+ 
+- Heart background: Use the mouse wheel to dynamically enlarge or contract the heart.
 
- - Blush
-Using `lerpColor()`, the blush color progressively shifts over time. By gradually increasing the variable t, the blush color smoothly transitions from skinColor to blushColor.
+Features
+- Blush: A gentle animated gradient is produced by utilizing lerpColor() to gradually change the cheeks' color. 
+- Hair: The bangs and side hair that frame the face are a combination of arcs, triangles, and semicircles. - Nose, neck, and shoulders: The portrait is finished with a small triangular nose, a quad for the neck, and an ellipse for the shoulders.
 
--	Blinking eyes
-Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The Week 3 group project gave me this idea. I made the eyes blink naturally instead of moving the character.
+Experience
 
--	Interactivity
-The mouth's width follows `mouseX`, and its height follows `mouseY`. This makes the portrait more playful and interactive.
+Overall, this project is meant to give the viewer a playful and interactive experience, showing how simple code and geometric shapes can come together to form a lively, cartoon-like character.
 
--	Hair
- I had never used the `arc()` function for the hair before. `triangles（）` and semicircles are used to create the hair.  Triangles are used for hair on the sides, and semicircles are used for bangs.  By changing the angles, curved shapes were created that more naturally frame the face.
-
-- Heart background
-The heart is made of two circles and one triangle. I used` scale()` with `mouseWheel()` for the first time to make it dynamically resize.it automatically resizes with the mouse wheel.
-
-— Nose
-I used triangles made a cute nose.
-
-- Shouder and Neck
-I made  the neck using a `quad() `to join the head and body.  I used an `ellipse()` to be the shoulders.
 ## Screenshot(s)
 
 This bit should have some images of the program running so that the reader has a sense of what it looks like. 
