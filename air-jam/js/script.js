@@ -19,6 +19,25 @@ function setup() {
     createCanvas(900, 900);
     skinColor = color(255, 220, 200);//skin
     blushColor = color(255, 170, 170);//pink blush
+}
+
+function draw() {
+    background(255, 204, 204)
+    // Mouse click color chang
+    fill(255, 100, 150);
+    noStroke();
+    // When pressed → Red
+    if (mouseIsPressed) {
+        fill(225, 0, 0);
+        // Default → Pink
+    } else {
+        fill(255, 100, 150);
+    }
+    // Heart: two circles + one triangle (centered)
+    ellipse(350, 350, 570, 500);//left 
+    ellipse(550, 370, 570, 570)//right
+    triangle(150, 520, 815, 480, 460, 990);
+
 
     // Face
     fill(255, 220, 200);
@@ -31,6 +50,7 @@ function setup() {
         t += speed;
 
     let currentBlush = lerpColor(skinColor, blushColor, t);
+
     fill(currentBlush);
     noStroke();
     ellipse(330, 480, 120, 100);// left brush
@@ -117,8 +137,8 @@ function drawHair() {
     fill(0, 0, 0)
     arc(450, 280, 360, 330, PI, TWO_PI, CHORD);
     // Left 
-    triangle(280, 230, 150, 520, 260, 550);
+    triangle(300, 200, 100, 520, 260, 550);
 
     //Right
-    triangle(620, 230, 750, 500, 650, 550);
+    triangle(620, 230, 800, 500, 650, 550);
 }
