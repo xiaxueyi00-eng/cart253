@@ -1,5 +1,5 @@
-# TITLE OF PROJECT
 
+<title>Blishing Girl</title>
 AUTHOR NAME xueyi
 
 [View this project online] GitHub Pages Link : https://github.com/xiaxueyi00-eng/cart253/tree/main/air-jam
@@ -10,17 +10,16 @@ This project uses p5.js to create a playful self-portrait.
  The face is constructed from simple geometric shapes (triangle, quad, ellipse, and arc), and it is adorned with a heart-shaped background..  
 
 -	Blush
-lerpColor() is used to gradually change the blush color over time.
+Using `lerpColor()`, the blush color progressively shifts over time. As a result, the portrait has a subtle animation effect that gives it life
 -	Blinking eyes
-A conditional (if) with frameCount makes the eyes blink every few seconds.
-Inspired by the Week 3 group assignment.
+Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The group project from Week 3 served as the inspiration for this reasoning. I modified the same idea to mimic natural blinking rather than creating a character move.  
 -	Interactivity
 The pupils follow the mouse (mouseX) to add interaction.
 -	Hair
-I used the arc() function for the hair, which was new to me.
+For the hair, I used the arc() function, which I had never done before.  Curved shapes that more naturally frame the face were produced by adjusting the angles.
 -	Heart background
-The heart is made of two circles and one triangle.
-I used scale() with mouseWheel() for the first time to make it dynamically resize.
+The heart is made of two circles and one triangle. I used scale() with mouseWheel() for the first time to make it dynamically resize.
+I used the scale() function for the heart, which was new to me.
 ## Screenshot(s)
 
 This bit should have some images of the program running so that the reader has a sense of what it looks like. 
