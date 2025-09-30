@@ -14,10 +14,10 @@ This project creates a humorous self-portrait using p5.js.
 Using `lerpColor()`, the blush color progressively shifts over time. By gradually increasing the variable t, the blush color smoothly transitions from skinColor to blushColor.
 
 -	Blinking eyes
-Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The Week 3 group project give me this idea. I made the eyes blink naturally instead of moving the character.
+Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The Week 3 group project gave me this idea. I made the eyes blink naturally instead of moving the character.
 
 -	Interactivity
-The mouth ts width follows `mouseX`, and its height follows `mouseY`. This makes the portrait more playful and interactive.
+The mouth's width follows `mouseX`, and its height follows `mouseY`. This makes the portrait more playful and interactive.
 
 -	Hair
  I had never used the `arc()` function for the hair before. `triangles（）` and semicircles are used to create the hair.  Triangles are used for hair on the sides, and semicircles are used for bangs.  By changing the angles, curved shapes were created that more naturally frame the face.
