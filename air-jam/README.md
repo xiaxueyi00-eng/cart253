@@ -14,7 +14,7 @@ Using `lerpColor()`, the blush color progressively shifts over time. As a result
 -	Blinking eyes
 Using a conditional (`if`) and `frameCount`, the eyes blink every few seconds. The group project from Week 3 served as the inspiration for this reasoning. I modified the same idea to mimic natural blinking rather than creating a character move.  
 -	Interactivity
-The pupils follow the mouse (mouseX) to add interaction.
+The mouth changes size with the mouse. Its width follows mouseX, and its height follows mouseY. This makes the portrait more playful and interactive.
 -	Hair
 For the hair, I used the arc() function, which I had never done before.  Curved shapes that more naturally frame the face were produced by adjusting the angles.
 -	Heart background
