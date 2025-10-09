@@ -27,7 +27,7 @@
 - Sometimes frog will randomly have a super long tongues that can eat two flies at once.
 
 10: Add water ripple effect
-- A ripple on the tongue or a jump can be animated with ellipse diffusion.
+- When the frog jumps or uses its tongue, water ripples appear around it, animated using expanding ellipses.
 
 11: ice frogs
 - When the weather gets cold, the frog freeze,the tongues movement slows down.
