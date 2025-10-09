@@ -1,12 +1,12 @@
 
 1: A frog can change color. 
-- When the frog eats the fly, the body changes color. 
+- When the frog eats the fly, the body changes color it might turn into an excited yellow.. 
 
 2: Frog will wear the hat.
 - When the frog gets the highest score, the frog will wear a cute hat in a different style.
 
 3: Frog will look in the mirror.
--  There's a small path of water in the game, the frog will look down at the reflection and make funny face.
+-  There's a small path of water in the game, sometime the frog will look down at the reflection and make funny face.
 
 4: Frogs can be rad.
 - When the frog eats the special fly (the red one), the frog's body turns red, and its speed increases for a few seconds.
@@ -42,19 +42,19 @@
 - After eating a transparent fly, the frog becomes invisible for a few seconds, and the fly can't see it.
 
 15: Frog can clone
-When playing the game and getting the high, the frog will clone; two frogs can eat much 
+When playing the game and getting the high score , the frog will clone; two frogs can eat much 
 
 16: Frog will be sleeping.
 - When the frog doesn't move for a long time, the frog will have a nap.
 
 17:Fly rain
-- A "fly rain" is coming; many flies will fall down, and frogs must eat as many as pssible.
+- A "fly rain" is coming; many flies will fall down, and frogs must eat as many as pssible, otherwise it will lose points.
 
 18:Frog have life value.
 - If the frog eats the black fly, life value will be lower ; when it eats the normal one, it will be restored.
 
 19: Frog will hit itself.
-- If the frog fires its tongue too many times, the frog will be stunned by the rebound force.
+- If the frog fires its tongue too many times, it gets stunned by the rebound force.
 
 20: Frog will wear sunglasses.
 - When the sunlight is too strong, the frog  puts on cool sunglasses.
