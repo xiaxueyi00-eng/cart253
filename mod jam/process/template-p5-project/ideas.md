@@ -1,6 +1,6 @@
 
 1: A frog can change color. 
-- When the frog eats the fly, the body changes color it might turn into an excited yellow.. 
+- When the frog eats the fly, the body changes color it might turn into an excited yellow.
 
 2: Frog will wear the hat.
 - When the frog gets the highest score, the frog will wear a cute hat in a different style.
@@ -42,7 +42,7 @@
 - After eating a transparent fly, the frog becomes invisible for a few seconds, and the fly can't see it.
 
 15: Frog can clone
-When playing the game and getting the high score , the frog will clone; two frogs can eat much 
+- When playing the game and getting the high score , the frog will clone; two frogs can eat much 
 
 16: Frog will be sleeping.
 - When the frog doesn't move for a long time, the frog will have a nap.
