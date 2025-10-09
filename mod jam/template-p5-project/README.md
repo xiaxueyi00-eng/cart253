@@ -1,35 +1,58 @@
-# TITLE OF PROJECT
+1: A frog can change color. 
+- When the frog eats the fly, the frog will change the color. 
 
-AUTHOR NAME
+2: Frog will wear the hat.
+- When the frog gets the highest number, the frog will wear a cute hat in a different way. 
 
-[View this project online](URL_FOR_THE_RUNNING_PROJECT)
+3: Frog will look in the mirror.
+-  There's a path of water im=n the game, the frog will  look down at the reflection and scowl.
 
-## Description
+4: Frogs can be rad.
+- When the frog eats the special fly (the red one), the frog's body turns red, and its speed increases for a few seconds.
 
-This description should help the reader understand what the program is, anything they should know to be able to experience it (controls, special features, etc.), and what the desired user experience is. For example:
+5: Frog can speak.
+- Add a text box that says “Guagua“ it's makes fun.
+6: Night mods
+- The game changes from day to night; the background color slowly gets darker and you can add the moon or stars.
 
-> *The Mayor of Clown Town* is a simulator experience that allows the user to control a small town populated entirely by clowns.
+7: Frog has a pet; it's a little fly
+- There is a small fly that will not be eaten that follows the frog as a companion.
 
-> The experience is controlled via the mouse, with left click selecting a clown and bringing up a menu of options such as "slip of banana peel" or "get into impossible capacious clown-car."
+8: Frog will fall into the water. 
+- If jump too many times, you will accidentally fall into the water, and it will take a few seconds to climb out.
 
-> The project is meant to give the user a sense of what it would be the mayor of a town of clowns, eventually getting the sense that clowns are not taking their civic duties seriously.
+9: Tongue becomes super long
+- Sometimes frogs will randomly have super long tongues that can eat two flies at once.
 
-## Screenshot(s)
+10: Add water ripple effect
+- A ripple on the tongue or a jump can be animated with ellipse diffusion.
 
-This bit should have some images of the program running so that the reader has a sense of what it looks like. For example:
+11: Frogs turning into ice frogs
+- When the weater be cold, the frog freeeze,their tongues slow down.
 
-> ![Image of a clown face](./assets/images/clown.png)
+12: Frog can squint and get angry.
+- If you can't eat a fly for too long, you will squint your eyes and turn red to be angry.
 
-## Attribution
+13:Frog can get their tongues in knots.
+- The tongue may become knotted when it is too long, making it momentarily impossible to attack.
 
-This bit should attribute any code, assets or other elements used taken from other sources. For example:
+14:Frog becomes transparent
+- After eating a transparent fly, the frog becomes transparent for a few seconds, and the fly can't see it.
 
-> - This project uses [p5.js](https://p5js.org).
-> - The clown image is a capture of the clown from the Apple emoji character set.
-> - The barking sound effect is "single dog bark 1" by crazymonke9 from freesound.org: https://freesound.org/people/crazymonke9/sounds/418107/
+15: Frog can split 
+When playing the game and getting the high, the frog will clone; two frogs can eat much 
 
-## License
+16: Frog will be sleeping.
+- When the frog doesn't move for a long time, the frog will have a nap.
 
-This bit should include the license you want to apply to your work. For example:
+17:Fly rain
+- A "fly rain" is coming; many flies will fall down, and frogs need to eat much.
 
-> This project is licensed under a Creative Commons Attribution ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.en)) license with the exception of libraries and other components with their own licenses.
+18:Frog have life value.
+- If the frog eats the black fly, life value will be less; when it eats the normal one, it will be restored.
+
+19: Frog will hit itself.
+- If fire the tongue too many times, the frog will be stunned by the rebound force.
+
+20: Frog will wear sunglasses.
+- When the sun is too strong, the frog will put on sunglasses.
