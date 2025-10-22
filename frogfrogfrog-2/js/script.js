@@ -128,18 +128,53 @@ function moveFly() {
 function drawFly() {
     push();
     noStroke();
-    fill("#000000");
-    ellipse(fly.x, fly.y, fly.size);
+
+
+    drawWings(fly.x, fly.y)
+    fill(fly.color || "#000000");
+    ellipse(fly.x, fly.y, fly.size * 1.2);
+
     pop();
 }
+
+
+function drawWings(x, y) {
+    // 🪽 Gentle wing flapping animation using a sine wave
+    let wingFlap = sin(frameCount * 0.3) * 4;  // Flapping amplitude
+    let wingSpan = 10;        // Horizontal distance between wings
+    let wingYOffset = 5;      // Vertical offset of the wings
+    let wingXOffset = wingFlap; // Wing movement that changes over time
+    let birdSize = fly.size * 3; // Adjust overall wing size relative to the fly
+
+    // --- Draw wings ---
+    fill(255, 255, 255, 120); // Semi-transparent white for light, delicate wings
+    ellipse(x - wingSpan - wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
+    ellipse(x + wingSpan + wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
+
+}
+
+
+
 
 /**
  * Resets the fly to the left with a random y
  */
+
+let flyCount = 0
 function resetFly() {
+    flyCount++;
     fly.x = 0;
     fly.y = random(0, 300);
+
+
+    if (flyCount % 3 === 0) {
+        fly.color = "#e5ff00ff";
+    } else {
+        fly.color = "#000000";
+    }
 }
+
+
 
 /**
  * Moves the frog to the mouse position on x
@@ -200,6 +235,32 @@ function drawFrog() {
     noStroke();
     ellipse(frog.body.x, frog.body.y, frog.body.size);
     pop();
+
+    // Draw the frog's eyes
+    drawEyes();
+}
+function drawEyes() {
+    let eyeHeight = 35; // default: open
+
+    // Blink every 40 frames, close for 10 frames
+    if (frameCount % 40 < 10) {
+        eyeHeight = 10; // closed
+    }
+    //Draw the frog's eyes
+    push();
+    fill("white");
+    noStroke();
+    ellipse(frog.body.x - 40, frog.body.y - 70, 35, eyeHeight);
+    ellipse(frog.body.x + 40, frog.body.y - 70, 35, eyeHeight);
+    pop();
+
+    push();
+    fill("black");
+    noStroke();
+    ellipse(frog.body.x - 40, frog.body.y - 70, 15, 15);
+    ellipse(frog.body.x + 40, frog.body.y - 70, 15, 15);
+    pop();
+
 }
 
 /**
