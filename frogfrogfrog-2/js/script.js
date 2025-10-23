@@ -11,7 +11,7 @@ let gameState = "start";
 let score = 0;       // Current score
 let bestScore = 0;   // Highest score
 let startTime;
-let gamDuration = 40;
+const gameDurationMs = 40000; // 40 seconds (in milliseconds)
 
 // Our frog
 const frog = {
@@ -30,30 +30,33 @@ const frog = {
         size: 20,
         speed: 20,
         // Determines how the tongue moves each frame
-        state: "idle" // State can be: idle, outbound, inbound
+        state: "idle" // idle, outbound, inbound
     }
 };
 
 // Our fly
-// Has a position, size, and speed of horizontal movement
+// Fly
 const fly = {
     x: 0,
-    y: 200, // Will be random
+    y: 200,
     size: 10,
-    speed: 3
+    speed: 3,
+    color: "#000000"
 };
+
 
 /**
  * Creates the canvas and initializes the fly
  */
+
+
 function setup() {
     createCanvas(640, 480);
 
     // Give the fly its first random position
     resetFly();
 }
-starTime = mills();
-
+// --- DRAW LOOP ---
 function draw() {
     // --- Control the overall game states ---
     if (gameState === "start") {
@@ -83,10 +86,7 @@ function drawStartScreen() {
     if (mouseIsPressed) {
         resetGame();
         gameState = "play";
-    }
-    function resetGame() {
-        resetFly();
-        frog.tongue.state = "idle"
+        startTime = millis();// start timer here
     }
 
 }
@@ -103,17 +103,16 @@ function drawGame() {
 }
 
 //  Countdown logic
-let elapsed = millis() - startTime;
-let remaining = max(0, (gameDuration - elapsed) / 1000); // seconds left
+const elapsed = millis() - startTime;
+const remainingSec = max(0, (gameDurationMs - elapsed) / 1000);
 
-// Show timer
 fill(0);
 textSize(20);
 textAlign(LEFT, TOP);
-text("⏰ " + nf(remaining.toFixed(1), 2, 1) + "s", 10, 10);
+text(nf(remainingSec.toFixed(1), 2, 1) + "s", 10, 10);
 
-// End game when time runs out
-if (elapsed > gameDuration) {
+// End when time runs out
+if (elapsed >= gameDurationMs) {
     gameState = "end";
 }
 
@@ -124,7 +123,6 @@ function drawEndScreen() {
     fill("yellow");
     textSize(40);
 
-    //  WIN message
     if (score >= 5) {
         text("YOU WIN!", width / 2, height / 2 - 50);
     } else {
@@ -138,54 +136,18 @@ function drawEndScreen() {
 
     //  Restart logic
     if (mouseIsPressed) {
-        score = 0;                   // Reset score
-        frog.body.color = "#00ff00"; // Reset frog color
-        resetFly();                  // Reset fly
+        resetGame();
         gameState = "start";         // Go back to start screen
     }
 }
 
-function gameOverScreen() {
-    background(23, 24, 24, 3);
-    textAlign(CENTER);
-
-    if (bestScore < score) {
-        bestScore = score;
-    }
-    fill(255, 227, 132);
-    textSize(30);
-    text("Highest", width / 2, height / 10);
-    textSize(40);
-    text(bestScore, width / 2, height / 5);
-
-    fill(230, 180, 80);
-    textSize(30);
-    text("Score", width / 2, height / 2 - 110);
-    textSize(150);
-    text(score, width / 2, height / 2 + 50);
-
-    fill(92, 167, 182);
-    rectMode(CENTER);
-    noStroke();
-    rect(width / 2, height - 40, 200, 60, 5);
-    fill(236, 240, 241);
-    textSize(30);
-    text("Restart", width / 2, height - 30);
-}
-function startGame() {
-    gameScreen = 1;
-}
-
-
-function gameOver() {
-    gameScreen = 2;
-    gameoverSound.play();
-}
-
-function restart() {
-    gameScreen = 1;
-    lastAddTime = 0;
-    birds = [];
+// --- Helper Functions ---
+function resetGame() {
+    score = 0;
+    frog.body.color = "#00ff00";
+    frog.tongue.state = "idle";
+    frog.tongue.y = 400;
+    resetFly();
 }
 /**
  * Moves the fly according to its speed
@@ -247,7 +209,17 @@ function resetFly() {
         fly.color = "#000000";
     }
 }
+function resetFly() {
+    flyCount++;
+    fly.x = 0;
+    fly.y = random(0, 300);
 
+    if (flyCount % 3 === 0) {
+        fly.color = "#e5ff00"; // yellow fly
+    } else {
+        fly.color = "#000000"; // black fly
+    }
+}
 /**
  * Moves the frog to the mouse position on x
  */
@@ -259,29 +231,17 @@ function moveFrog() {
  * Handles moving the tongue based on its state
  */
 function moveTongue() {
-    // Tongue matches the frog's x
     frog.tongue.x = frog.body.x;
-    // If the tongue is idle, it doesn't do anything
-    if (frog.tongue.state === "idle") {
-        // Do nothing
-    }
-    // If the tongue is outbound, it moves up
-    else if (frog.tongue.state === "outbound") {
-        frog.tongue.y += -frog.tongue.speed;
-        // The tongue bounces back if it hits the top
-        if (frog.tongue.y <= 0) {
-            frog.tongue.state = "inbound";
-        }
-    }
-    // If the tongue is inbound, it moves down
-    else if (frog.tongue.state === "inbound") {
+
+    if (frog.tongue.state === "outbound") {
+        frog.tongue.y -= frog.tongue.speed;
+        if (frog.tongue.y <= 0) frog.tongue.state = "inbound";
+    } else if (frog.tongue.state === "inbound") {
         frog.tongue.y += frog.tongue.speed;
-        // The tongue stops if it hits the bottom
-        if (frog.tongue.y >= height) {
-            frog.tongue.state = "idle";
-        }
+        if (frog.tongue.y >= height) frog.tongue.state = "idle";
     }
 }
+
 
 /**
  * Displays the tongue (tip and line connection) and the frog (body)
@@ -365,14 +325,9 @@ function checkTongueFlyOverlap() {
 /**
  * Launch the tongue on click (if it's not launched yet)
  */
+// Only shoot tongue during play state
 function mousePressed() {
-    if (mouseIsPressed) {
-        resetGame();
-        gameState = "play";
-        startTime = millis(); //  Start timer
-    }
-    if (frog.tongue.state === "idle") {
+    if (gameState === "play" && frog.tongue.state === "idle") {
         frog.tongue.state = "outbound";
     }
 }
-
