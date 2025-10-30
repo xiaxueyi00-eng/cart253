@@ -13,6 +13,7 @@ let bestScore = 0;
 let startTime;
 let gameDurationMs = 10000; // 10 seconds (in milliseconds)
 
+
 // Our frog
 const frog = {
     body: {
@@ -75,6 +76,7 @@ function drawStartScreen() {
     }
 }
 
+
 // --- Main Game Loop ---
 function drawGame() {
     background("#87ceeb");
@@ -84,21 +86,29 @@ function drawGame() {
     moveTongue();
     drawFrog();
     checkTongueFlyOverlap();
+    printScore();
 
-    // ✅ Countdown logic
     const elapsed = millis() - startTime;
     const remainingSec = max(0, (gameDurationMs - elapsed) / 1000);
-
     fill(0);
     textSize(20);
     textAlign(LEFT, TOP);
     text(nf(remainingSec.toFixed(1), 2, 1) + "s", 10, 10);
 
-    // End when time runs out
     if (elapsed >= gameDurationMs) {
         gameState = "end";
     }
 }
+
+
+function printScore() {
+    textAlign(LEFT);
+    fill(50);
+    textSize(30);
+    text("Score: " + score, 5 * width / 6, height / 9);
+    text("Best: " + bestScore, 5 * width / 6, height / 9 + 40);
+}
+
 
 // --- End Screen ---
 function drawEndScreen() {
