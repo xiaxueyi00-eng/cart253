@@ -11,7 +11,8 @@ let gameState = "start";
 let score = 0;
 let bestScore = 0;
 let startTime;
-let gameDurationMs = 10000; // 10 seconds (in milliseconds)
+let baseGameDurationMs = 10000; // 10 seconds (in milliseconds)
+let extraTimeMs = 0;
 
 
 // Our frog
@@ -89,13 +90,13 @@ function drawGame() {
     printScore();
 
     const elapsed = millis() - startTime;
-    const remainingSec = max(0, (gameDurationMs - elapsed) / 1000);
+    const remainingSec = max(0, (baseGameDurationMs + extraTimeMs - elapsed) / 1000);
     fill(0);
     textSize(20);
     textAlign(LEFT, TOP);
     text(nf(remainingSec.toFixed(1), 2, 1) + "s", 10, 10);
 
-    if (elapsed >= gameDurationMs) {
+    if (elapsed >= baseGameDurationMs + extraTimeMs) {
         gameState = "end";
     }
 }
@@ -105,8 +106,7 @@ function printScore() {
     textAlign(LEFT);
     fill(50);
     textSize(30);
-    text("Score: " + score, 5 * width / 6, height / 9);
-    text("Best: " + bestScore, 5 * width / 6, height / 9 + 40);
+    textAlign(CENTER); text("Score: " + score, width / 2, 50);
 }
 
 
@@ -115,18 +115,26 @@ function drawEndScreen() {
     background("black");
     textAlign(CENTER, CENTER);
     fill("yellow");
-    textSize(40);
+    textSize(50);
 
-    if (score >= 8) {
-        text("YOU WIN! ", width / 2, height / 2 - 50);
-    } else {
-        text("GAME OVER ", width / 2, height / 2 - 50);
+
+    if (score > bestScore) {
+        bestScore = score;
     }
 
+    if (score >= 8) {
+        text("YOU WIN!", width / 2, height / 2 - 100);
+    } else {
+        text("GAME OVER", width / 2, height / 2 - 100);
+    }
+
+
     fill("white");
-    textSize(25);
-    text("Your score: " + score, width / 2, height / 2 + 10);
-    text("Click to Restart", width / 2, height / 2 + 60);
+    textSize(30);
+    text("Your Score: " + score, width / 2, height / 2 - 20);
+    text("Best Score: " + bestScore, width / 2, height / 2 + 20);
+    text("Click to Restart", width / 2, height / 2 + 100);
+
 
     if (mouseIsPressed) {
         resetGame();
@@ -137,6 +145,7 @@ function drawEndScreen() {
 // --- Helper Functions ---
 function resetGame() {
     score = 0;
+    extraTimeMs = 0;
     frog.body.color = "#00ff00";
     frog.tongue.state = "idle";
     frog.tongue.y = 400;
@@ -145,6 +154,7 @@ function resetGame() {
 
 function moveFly() {
     fly.x += fly.speed;
+    fly.y = 200 + sin(frameCount * 0.1) * 80;
     if (fly.x > width) {
         resetFly();
     }
@@ -181,6 +191,7 @@ function resetFly() {
     } else {
         fly.color = "#000000"; // black fly
     }
+
 }
 
 function moveFrog() {
@@ -252,6 +263,7 @@ function checkTongueFlyOverlap() {
 
         if (fly.color === "#e5ff00") {
             frog.body.color = "#e5ff00";
+            extraTimeMs += 3000;
         } else {
             frog.body.color = "#00ff00";
         }
