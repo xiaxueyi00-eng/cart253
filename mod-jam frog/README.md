@@ -1,7 +1,7 @@
 # Frogfrogfrog
 A simple, fun, and timing-based mini game made with **p5.js**.
 
-[Play it!](https://pippinbarr.github.io/cart253-examples/topics/making/frogfrogfrog/index.html)
+[Play it!](https://xiaxueyi00-eng.github.io/cart253/mod-jam%20frog/)
 
 The player controls a frog at the bottom of the screen.  
 Click to shoot the frog’s tongue and try to eat as many flies as possible before the timer runs out.
