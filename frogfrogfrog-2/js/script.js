@@ -1,5 +1,5 @@
 /**
- * Frogfrogfrog
+ *Frog Time!
  *
  * Made with p5
  * https://p5js.org/
@@ -13,6 +13,7 @@ let bestScore = 0;
 let startTime;
 let baseGameDurationMs = 10000; // 10 seconds (in milliseconds)
 let extraTimeMs = 0;
+
 
 
 // Our frog
@@ -37,6 +38,7 @@ const fly = {
     x: 0,
     y: 200,
     size: 10,
+    angle: 0,
     speed: 3,
     color: "#000000"
 };
@@ -59,6 +61,7 @@ function draw() {
     }
 }
 
+
 // --- Start Screen ---
 function drawStartScreen() {
     background("#90d195");
@@ -80,7 +83,7 @@ function drawStartScreen() {
 
 // --- Main Game Loop ---
 function drawGame() {
-    background("#87ceeb");
+    drawBackground();
     moveFly();
     drawFly();
     moveFrog();
@@ -100,6 +103,59 @@ function drawGame() {
         gameState = "end";
     }
 }
+function drawBackground() {
+    // Light blue background for sky/water
+    background(5, 172, 223);
+    noStroke();
+    fill(5, 223, 143);
+    rect(0, height / 2, width, height / 2);
+
+    // clouds
+    drawCloud(110, 80, 1.0);
+    drawCloud(300, 60, 1.3);
+    drawCloud(520, 85, 0.9);
+
+    // Lotus leaves base color
+    noStroke();
+    fill("#3da35d");
+    ellipse(150, height - 60, 120, 50);
+    ellipse(400, height - 40, 180, 70);
+    ellipse(550, height - 80, 100, 45);
+
+    // Leaf lines (simple veins)
+    stroke("#2e7d32");
+    strokeWeight(2);
+
+    // First leaf
+    line(150, height - 60, 150, height - 85);
+    line(150, height - 60, 120, height - 55);
+    line(150, height - 60, 180, height - 55);
+
+    // Second leaf
+    line(400, height - 40, 400, height - 70);
+    line(400, height - 40, 370, height - 35);
+    line(400, height - 40, 430, height - 35);
+
+
+    // Third leaf
+    line(550, height - 80, 550, height - 100);
+    line(550, height - 80, 530, height - 75);
+    line(550, height - 80, 570, height - 75);
+}
+// === Draw simple cloud ===
+function drawCloud(x, y, s = 1) {
+    push();
+    noStroke();
+    fill(255, 255, 255, 230); // white, slightly transparent
+
+    // main fluffy parts
+    ellipse(x, y, 60 * s, 40 * s);
+    ellipse(x - 25 * s, y + 5 * s, 50 * s, 30 * s);
+    ellipse(x + 25 * s, y + 8 * s, 50 * s, 30 * s);
+    ellipse(x, y + 12 * s, 70 * s, 25 * s);
+    pop();
+
+}
 
 
 function printScore() {
@@ -118,29 +174,45 @@ function drawEndScreen() {
     textSize(50);
 
 
-    if (score > bestScore) {
-        bestScore = score;
-    }
+    push();
+
+    let oldX = frog.body.x;
+    let oldY = frog.body.y;
+
+    frog.body.x = 0;
+    frog.body.y = 0;
+
+    translate(width / 2, height / 2 + 40);
+    rotate(frameCount * 0.05);
+    scale(1.0);
+
+    drawFrog();
+
+    frog.body.x = oldX;
+    frog.body.y = oldY;
+
+    pop();
+
+    if (score > bestScore) bestScore = score;
 
     if (score >= 8) {
-        text("YOU WIN!", width / 2, height / 2 - 100);
+        text("YOU WIN!", width / 2, height / 2 - 120);
     } else {
-        text("GAME OVER", width / 2, height / 2 - 100);
+        text("GAME OVER", width / 2, height / 2 - 120);
     }
-
 
     fill("white");
     textSize(30);
-    text("Your Score: " + score, width / 2, height / 2 - 20);
-    text("Best Score: " + bestScore, width / 2, height / 2 + 20);
-    text("Click to Restart", width / 2, height / 2 + 100);
-
+    text("Your Score: " + score, width / 2, height / 2 + 20);
+    text("Best Score: " + bestScore, width / 2, height / 2 + 60);
+    text("One More Try ?", width / 2, height / 2 + 120);
 
     if (mouseIsPressed) {
         resetGame();
         gameState = "start";
     }
 }
+
 
 // --- Helper Functions ---
 function resetGame() {
@@ -163,6 +235,7 @@ function moveFly() {
 function drawFly() {
     push();
     noStroke();
+    rotate(fly.angle);
     drawWings(fly.x, fly.y);
     fill(fly.color);
     ellipse(fly.x, fly.y, fly.size * 1.2);
@@ -179,6 +252,8 @@ function drawWings(x, y) {
     fill(255, 255, 255, 120);
     ellipse(x - wingSpan - wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
     ellipse(x + wingSpan + wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
+
+
 }
 
 function resetFly() {
@@ -191,6 +266,8 @@ function resetFly() {
     } else {
         fly.color = "#000000"; // black fly
     }
+
+
 
 }
 
@@ -211,33 +288,45 @@ function moveTongue() {
 }
 
 function drawFrog() {
-    // Tongue tip
-    push();
-    fill("#ff0000");
-    noStroke();
-    ellipse(frog.tongue.x, frog.tongue.y, frog.tongue.size);
-    pop();
+    // === Tongue only in play state ===
+    if (gameState === "play") {
+        // Tongue line (draw BEFORE body so the body hides the base)
+        push();
+        stroke("#ff0000");
+        strokeWeight(frog.tongue.size);
+        line(frog.tongue.x, frog.tongue.y, frog.body.x, frog.body.y - 20); // 🔥 从嘴的位置开始
+        pop();
 
-    // Tongue line
-    push();
-    stroke("#ff0000");
-    strokeWeight(frog.tongue.size);
-    line(frog.tongue.x, frog.tongue.y, frog.body.x, frog.body.y);
-    pop();
+        // Tongue tip
+        push();
+        fill("#ff0000");
+        noStroke();
+        ellipse(frog.tongue.x, frog.tongue.y, frog.tongue.size);
+        pop();
+    }
 
-    // Frog body
+    // === Frog body ===
     push();
     fill(frog.body.color);
     noStroke();
     ellipse(frog.body.x, frog.body.y, frog.body.size);
     pop();
 
-    // Eyes
+    // === Mouth (this hides tongue root) ===
+    push();
+    fill("#ff4d4d");
+    noStroke();
+    ellipse(frog.body.x, frog.body.y - 20, 30, 22);
+    pop();
+
+    // === Eyes ===
     drawEyes();
 }
 
+//  Eyes stay OUTSIDE drawFrog()
 function drawEyes() {
-    let eyeHeight = frameCount % 40 < 10 ? 10 : 35;
+    let blink = frameCount % 60 < 10; // blink animation
+    let eyeHeight = blink ? 10 : 35;
 
     push();
     fill("white");
@@ -270,13 +359,12 @@ function checkTongueFlyOverlap() {
 
         resetFly();
         frog.tongue.state = "inbound";
-
-        if (score >= 5) {
-            gameState = "end";
-        }
     }
-}
+    if (score >= 8) {
+        gameState = "end";
+    }
 
+}
 // Only shoot tongue during play state
 function mousePressed() {
     if (gameState === "play" && frog.tongue.state === "idle") {

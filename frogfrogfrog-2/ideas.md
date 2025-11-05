@@ -1,24 +1,26 @@
 # Starting points
 
 
-Finding metro tickets on the ground and trying to sell them
+This is an effortless, amusing, and timing game. The player controls the frog to eat the most flies before time runs out. 
 
-**Frog eating flies but it gets harder and harder to catch them**
+The frog eats flies, but it gets harder and harder to catch them.
 
-Swimming lessons but controlling your body is really hard
+When the game starts, it will have a limited timer.
 
-Crossing the street and it’s busy
+Eating the black fly can get 1 score.
 
-Riding a tricycle but the wheel keeps falling off
+Yellow flies are rare. When the frog eats the yellow fly, 3 seconds are added to the timer.
 
-Shaving people’s heads in beautiful patterns and showing them at an art gallery
+The game goal is to eat 8 flies before the time reaches zero.
 
-Making cups out of clay and seeing what cafe customers say about them
+If the time runs out, the player loses and can restart.
 
-Growing plants that eat you
+The fly move up and down in a smooth wave-like motion.
 
-Keeping a computer mouse as a pet and looking after it
+Each fly has two cute white flapping wings.
 
-Rewiring a light
+For the game background, I added the sky, clouds, green water, and lily pads, creating a funny and calm pond environment.
 
-Cooking spaghetti with a dog
+At the end of the game, a frog will appear, spinning slowly and playfully ending.
+
+At the end of the game, it will show the game’s highest score, increasing the player’s desire to win.

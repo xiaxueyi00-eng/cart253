@@ -1,72 +1,122 @@
-# Pseudocode for Frogfrogfrog
+# Pseudocode for Frog Time!
 
-```
 frog
     body
-        x: 320 // Halfway across a 640x480 canvas
-        y: 480 // Bottom of a 640x480 canvas
-        size: 100 // Diameter of the frog circle
+        x: 320
+        y: 460
+        size: 150
+        color: green
     tongue
-        x: undefined // Will always match the body
-        y: 480 // At the bottom (important to draw it BEHIND the frog)
-        size: 20 // The tip of the tongue
-        speed: 20 // Speed the tongue movies in pixels/second
-        state: idle // At the start the tongue hasn't been launched
+        x: same as frog body x
+        y: 400
+        size: 20
+        speed: 20
+        state: idle  // idle, outbound, inbound
 
 fly
-    x: 0 // The left
-    y: 200? // This will be a random position...
-    size: 10 // Small?
-    speed: 3 // How fast it moves across the screen
+    x: 0
+    y: random between 0 and 300
+    size: 10
+    speed: 3
+    color: black  // every third fly becomes yellow
+flyCount = 0
+
+score = 0
+bestScore = 0
+baseGameDuration = 8 seconds
+extraTime = 0
+gameState = "start"
+
+winCondition = score >= 8
+
 
 setup()
-    Create a 640x480 canvas
+    create 640x480 canvas
+    resetFly()
 
 draw()
-    Draw the background // Probably just blue or something
-    moveFly()
-    drawFly()
-    moveFrog()
-    moveTongue()
-    drawFrog()
-    checkTongueFlyOverlap()
+    if gameState == "start"
+        draw start screen
+        if mouse pressed
+            resetGame()
+            record startTime
+            gameState = "play"
+
+    else if gameState == "play"
+        draw background
+        moveFly()
+        drawFly()
+        moveFrog()
+        moveTongue()
+        drawFrog()
+        checkTongueFlyOverlap()
+        display score
+        display remaining time
+        if time <= 0
+            gameState = "end"
+        if score >= winCondition
+            gameState = "end"
+
+    else if gameState == "end"
+        display win/lose message
+        display score and bestScore
+        display rotating frog
+        if mouse pressed
+            gameState = "start"
+
+
+resetFly()
+    flyCount += 1
+    fly.x = 0
+    fly.y = random between 0 and 300
+    if flyCount % 3 == 0
+        fly.color = yellow
+    else
+        fly.color = black
 
 moveFly()
-    add fly speed to fly x
-    if (fly x is past the right side of the canvas)
-        move the fly back to the left
-        give the fly a random y position
+    fly.x += fly.speed
+    fly.y = 200 + sin(frameCount * 0.1) * 80
+    if fly.x > canvas width
+        resetFly()
 
 drawFly()
-    Draw a black circle at the fly's position with its size
+    draw wings (white)
+    draw body (fly.color)
 
 moveFrog()
-    Set the frog's x to the mouse x
+    frog.body.x = mouseX
 
 moveTongue()
-    Set tongue x to frog x
-    if (tongue state is idle)
-        Do nothing
-    else if (tongue state is outbound)
-        move the tongue up by its speed
-        if (tongue hit the top)
-            set the tongue state to inbound
-    else if (tongue state is inbound)
-        move the tongue down by its speed
-        if (tongue hit the bottom)
-            set the tongue state to idle
+    tongue.x = frog.body.x
+    if state == idle
+        do nothing
+    else if state == outbound
+        tongue.y -= tongue.speed
+        if tongue reaches top
+            state = inbound
+    else if state == inbound
+        tongue.y += tongue.speed
+        if tongue reaches bottom
+            state = idle
 
 drawFrog()
-    Draw a red circle at the tongue position with its size
-    Draw a red line from the tongue position to the frog position
-    Draw a green circle at the frog position with its size
+    draw tongue tip
+    draw tongue line
+    draw frog body in frog.body.color
+    draw blinking eyes
 
 checkTongueFlyOverlap()
-    if (tongue circle overlaps the fly)
-        Move the fly back to the left at a random y
-        set the tongue state to inbound
+    if distance between tongue and fly < contact threshold
+        score += 1
+        if fly.color == yellow
+            extraTime += 3 seconds
+            frog.body.color = yellow
+        else
+            frog.body.color = green
+        resetFly()
+        tongue.state = inbound
 
 mousePressed()
-    if (tongue state is idle)
-        set tongue state to outbound
-```
+    if gameState == "play" and tongue.state == idle
+        tongue.state = outbound
