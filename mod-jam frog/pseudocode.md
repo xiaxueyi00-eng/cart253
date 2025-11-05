@@ -31,90 +31,76 @@ winCondition = score >= 8
 
 
 setup()
-    create 640x480 canvas
+    create canvas
+    load eat sound
     resetFly()
+
 
 draw()
     if gameState == "start"
-        draw start screen
-        if mouse pressed
+        show start screen
+        if mouse pressed on frog
             resetGame()
-            record startTime
+            startTime = current time
             gameState = "play"
 
     else if gameState == "play"
         draw background
-        moveFly()
+        moveFly()       
         drawFly()
         moveFrog()
         moveTongue()
         drawFrog()
         checkTongueFlyOverlap()
-        display score
-        display remaining time
-        if time <= 0
-            gameState = "end"
-        if score >= winCondition
+
+        elapsedTime = current time - startTime
+        remainingTime = baseGameDuration + extraTime - elapsedTime
+        display score and remainingTime
+
+        if remainingTime <= 0 or score >= 8
             gameState = "end"
 
     else if gameState == "end"
-        display win/lose message
-        display score and bestScore
-        display rotating frog
+        draw rotating frog at screen center
+        if score > bestScore
+            bestScore = score
+        show win or lose text
+        show score and bestScore
         if mouse pressed
             gameState = "start"
 
 
 resetFly()
     flyCount += 1
-    fly.x = 0
-    fly.y = random between 0 and 300
+    fly.x = left side
+    fly.y = random vertical
+    fly.captured = false
     if flyCount % 3 == 0
         fly.color = yellow
     else
         fly.color = black
 
 moveFly()
-    fly.x += fly.speed
-    fly.y = 200 + sin(frameCount * 0.1) * 80
-    if fly.x > canvas width
-        resetFly()
-
-drawFly()
-    draw wings (white)
-    draw body (fly.color)
-
-moveFrog()
-    frog.body.x = mouseX
-
-moveTongue()
-    tongue.x = frog.body.x
-    if state == idle
-        do nothing
-    else if state == outbound
-        tongue.y -= tongue.speed
-        if tongue reaches top
-            state = inbound
-    else if state == inbound
-        tongue.y += tongue.speed
-        if tongue reaches bottom
-            state = idle
-
-drawFrog()
-    draw tongue tip
-    draw tongue line
-    draw frog body in frog.body.color
-    draw blinking eyes
+    if fly.captured == false
+        fly moves in sine-wave path
+        if fly exits screen
+            resetFly()
+    else
+        fly moves toward frog mouth using lerp
+        if fly reaches mouth
+            fly.captured = false
+            resetFly()
 
 checkTongueFlyOverlap()
-    if distance between tongue and fly < contact threshold
+    if distance(tongue tip, fly) < threshold and fly.captured == false
+        play eat sound
         score += 1
-        if fly.color == yellow
+        if fly is yellow
             extraTime += 3 seconds
-            frog.body.color = yellow
+            frog.color = yellow
         else
-            frog.body.color = green
-        resetFly()
+            frog.color = green
+        fly.captured = true
         tongue.state = inbound
 
 mousePressed()

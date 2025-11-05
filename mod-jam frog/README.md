@@ -33,14 +33,18 @@ Created for CART 253
 Built using p5.js
 https://p5js.org
 
-Fly wing ideal:
+Fly wing motion inspired by:
 https://editor.p5js.org/janss/sketches/LjYs-DJO5
 
-Game ideal:
+Game motion inspired by:
 https://editor.p5js.org/zm1029/sketches/nvDVlGF1W
 
-Frog revolve ideal:
+Frog revolve motion inspired by:
 https://editor.p5js.org/elinsterz/sketches/evrSX1kzZ
+
+Sound effect from:
+Mixkit Free Sound Library: https://mixkit.co/free-sound-effects/pop/
+
 
 - [Ideas](./ideas.md)
 - [Planning](./planning.md)

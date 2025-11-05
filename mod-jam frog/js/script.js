@@ -9,10 +9,14 @@
 
 let gameState = "start";
 let score = 0;
+let sEat;
 let bestScore = 0;
 let startTime;
 let baseGameDurationMs = 10000; // 10 seconds (in milliseconds)
 let extraTimeMs = 0;
+
+
+
 
 
 
@@ -40,13 +44,19 @@ const fly = {
     size: 10,
     angle: 0,
     speed: 3,
-    color: "#000000"
+    color: "#000000",
+    captured: false
+
 };
 
 let flyCount = 0;
 
+function preload() {
+    sEat = loadSound("assets/sounds/mixkit-game-blood-pop-slide-2363.wav");
+}
 function setup() {
     createCanvas(640, 480);
+    sEat.setVolume(0.6);
     resetFly();
 }
 
@@ -104,7 +114,6 @@ function drawGame() {
     }
 }
 function drawBackground() {
-    // Light blue background for sky/water
     background(5, 172, 223);
     noStroke();
     fill(5, 223, 143);
@@ -225,10 +234,32 @@ function resetGame() {
 }
 
 function moveFly() {
-    fly.x += fly.speed;
-    fly.y = 200 + sin(frameCount * 0.1) * 80;
-    if (fly.x > width) {
-        resetFly();
+    // If the fly has been captured by the frog
+    if (fly.captured) {
+
+        // Target position (the frog's mouth)
+        let targetX = frog.body.x;
+        let targetY = frog.body.y - 20;
+
+        // Smoothly move (lerp) the fly toward the frog's mouth
+        fly.x = lerp(fly.x, targetX, 0.15);
+        fly.y = lerp(fly.y, targetY, 0.15);
+
+        // Once the fly is close enough to the mouth, we consider it "eaten"
+        if (dist(fly.x, fly.y, targetX, targetY) < 10) {
+            fly.captured = false;
+            resetFly(); // Spawn a new fly
+        }
+
+    } else {
+        // Normal fly movement when it has not been captured
+        fly.x += fly.speed;
+        fly.y = 200 + sin(frameCount * 0.1) * 80;
+
+        // If the fly goes off the screen, spawn a new one
+        if (fly.x > width) {
+            resetFly();
+        }
     }
 }
 
@@ -344,26 +375,36 @@ function drawEyes() {
 }
 
 function checkTongueFlyOverlap() {
+    // Measure the distance between the tongue tip and the fly
     const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
     const eaten = (d < frog.tongue.size / 2 + fly.size / 2);
 
-    if (eaten) {
+    // Only trigger once (prevent scoring twice)
+    if (eaten && !fly.captured) {
+        sEat.play(); // Play eat sound once
+
+        // Increase score
         score += 1;
 
+        // If the fly is yellow, give extra time and change frog color
         if (fly.color === "#e5ff00") {
-            frog.body.color = "#e5ff00";
-            extraTimeMs += 3000;
-        } else {
-            frog.body.color = "#00ff00";
+            frog.body.color = "#e5ff00"; // Frog turns yellow temporarily
+            extraTimeMs += 3000;        // Bonus time
+        }
+        // Otherwise, it's a normal black fly
+        else {
+            frog.body.color = "#00ff00"; // Return to normal green
         }
 
-        resetFly();
-        frog.tongue.state = "inbound";
+        // Do not remove the fly instantly — animate it returning to the frog
+        fly.captured = true;
+        frog.tongue.state = "inbound"; // Start tongue returning animation
     }
+
+    // Win condition: reach target score
     if (score >= 8) {
         gameState = "end";
     }
-
 }
 // Only shoot tongue during play state
 function mousePressed() {

@@ -35,7 +35,13 @@ Basic things to do:
 
 - Make the fly flap its wings and move up and down while flying.
 
+- If the fly is captured, smoothly move it back toward the frog’s mouth using lerp before disappearing. 
+
 - Detect when the tongue overlaps the fly
+
+- Play an eating sound when the fly is caught.
+
+- If the fly is yellow, add extra time to the countdown and briefly change the frog’s color. 
 
 - Add score and countdown timer
 
@@ -51,7 +57,7 @@ Questions:
 
 - What does the frog look like?
 
-- A green circle with blinking eyes. The frog turns yellow briefly if it eats a yellow fly.
+- A green circle with blinking eyes. And a cute red mouth. The frog turns yellow briefly if it eats a yellow fly.
 
 - On the end screen, the frog reappears and rotates as a playful ending animation.
 
@@ -63,8 +69,6 @@ Questions:
 
 - How does the fly move?
 
-- The fly starts on the left at a random y-position and moves to the right.
-
 - The fly also moves up and down and randomly from left to right.
 
 - Every third fly is yellow instead of black.
@@ -75,7 +79,7 @@ Questions:
 
 - What does the tongue look like?
 
-- A red line to extend and recover.
+- A long red line with a round tip, stretching out and retracting from the frog’s mouth.
 
 - What does it all look like on the screen? Layout?
 
@@ -159,6 +163,10 @@ What happens in this project?
 
 - Every frame (draw)
 
+- Load the eating sound (sEat) 
+
+- Every frame (draw)
+
 - Draw the background (sky + water + lily pads)
 
 - Move and draw the fly
@@ -170,6 +178,8 @@ What happens in this project?
 - Draw the fly body (black or yellow).
 
 - Draw two small white wings that flap
+
+- 	If the fly has been captured
 
 - Move and draw the frog
 
@@ -201,9 +211,22 @@ What happens in this project?
 
 - If the fly was yellow, add +3 seconds to the timer.
 
+- Mark the fly as captured so it can animate back to the mouth instead of disappearing instantly
+
 - Reset the fly to the left
 
 - If not, nothing happens.
+
+- End condition
+
+- If score reaches 8 → Win
+
+- If the timer reaches 0 → Game Over
+	
+- On the end screen, redraw the frog and rotate it continuously for a visual animation effect.
+
+
+
 
 
 

@@ -11,6 +11,8 @@ Eating the black fly can get 1 score.
 
 Yellow flies are rare. When the frog eats the yellow fly, 3 seconds are added to the timer.
 
+Adds anticipation and enhances game feel
+
 The game goal is to eat 8 flies before the time reaches zero.
 
 If the time runs out, the player loses and can restart.
@@ -20,6 +22,8 @@ The fly move up and down in a smooth wave-like motion.
 Each fly has two cute white flapping wings.
 
 For the game background, I added the sky, clouds, green water, and lily pads, creating a funny and calm pond environment.
+
+When the frog eat the fly will have voice.
 
 At the end of the game, a frog will appear, spinning slowly and playfully ending.
 
