@@ -37,7 +37,7 @@ Fly wing ideal:
 https://editor.p5js.org/janss/sketches/LjYs-DJO5
 
 Game ideal:
-https://editor.p5js.org/janss/sketches/LjYs-DJO5
+https://editor.p5js.org/zm1029/sketches/nvDVlGF1W
 
 Frog revolve ideal:
 https://editor.p5js.org/elinsterz/sketches/evrSX1kzZ
