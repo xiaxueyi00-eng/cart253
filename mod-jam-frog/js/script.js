@@ -138,10 +138,21 @@ function drawGame() {
  */
 
 function drawBackground() {
-    background(5, 172, 223);
-    noStroke();
+    let c1, c2;
+    c1 = color(120, 190, 255);
+    c2 = color(90, 230, 170);
+    for (let y = 0; y < height; y++) {
+        let n = map(y, 0, height, 0, 1);
+        let newc = lerpColor(c1, c2, n);
+        stroke(newc);
+        line(0, y, width, y);
+    }
     fill(5, 223, 143);
-    rect(0, height / 2, width, height / 2);
+
+    noStroke();
+    noStroke();
+
+
 
     // clouds
     drawCloud(110, 80, 1.0);
@@ -149,7 +160,7 @@ function drawBackground() {
     drawCloud(520, 85, 0.9);
     drawCloud(200, 120, 1.6);
     drawCloud(450, 150, 1.4);
-    drawCloud(80, 40, 0.8);
+
 
     // Lotus leaves base color
     noStroke();
@@ -157,6 +168,8 @@ function drawBackground() {
     ellipse(150, height - 60, 120, 50);
     ellipse(400, height - 40, 180, 70);
     ellipse(550, height - 80, 100, 45);
+
+
 
     // Leaf lines (simple veins)
     stroke("#2e7d32");
