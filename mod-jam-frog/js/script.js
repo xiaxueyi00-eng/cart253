@@ -89,8 +89,8 @@ function drawStartScreen() {
     textAlign(CENTER, CENTER);
     textSize(40);
     fill("#38945e");
-    text("frogfrogfrog", width / 2, height / 2 - 40);
-    textSize(20);
+    text("frogfrogfrog", width / 2, height / 2 - 60);
+    textSize(30);
     text("Click the frog to start!", width / 2, height / 2 + 40);
     drawFrog();
     // Click anywhere to start game
