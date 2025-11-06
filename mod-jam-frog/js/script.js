@@ -36,7 +36,7 @@ const frog = {
         x: undefined,
         y: 400,
         size: 20,
-        speed: 20,
+        speed: 25,
         state: "idle"
     }
 };
@@ -64,7 +64,7 @@ function preload() {
 // === Setup canvas & initial state ===
 function setup() {
     createCanvas(640, 480);
-    sounds.eat.setVolume(0.6);
+    sounds.eat.setVolume(0.5);
     resetFly();
 }
 
@@ -421,20 +421,19 @@ function checkTongueFlyOverlap() {
 
     // Only process catch once
     if (eaten && !fly.captured) {
-        sounds.eat.play(); // FIXED: use correct sound reference ✅
-
-        score += 1; // Add score for any fly
+        sounds.eat.play();
+        score += 1;
 
         // If yellow fly → bonus effects
         if (fly.color === "#e5ff00") {
-            frog.body.color = "#e5ff00"; // Visual feedback
-            extraTimeMs += 3000;         // +3 seconds time
+            frog.body.color = "#e5ff00";
+            extraTimeMs += 3000;
         } else {
-            frog.body.color = "#00ff00"; // Reset to green for black flies
+            frog.body.color = "#00ff00";
         }
 
-        fly.captured = true;            // Trigger pull-in animation
-        frog.tongue.state = "inbound";  // Tongue begins returning
+        fly.captured = true;
+        frog.tongue.state = "inbound";
     }
 
     // If score reaches target → win immediately
