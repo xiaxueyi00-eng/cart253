@@ -32,7 +32,7 @@ Click to shoot the frog’s tongue and try to eat as many flies as possible befo
 
 ## Modifications Made
 
-- Added a title screen and basic gameplay instructions.
+- Added a title screen and basic of gameplay instructions.
 - Added an ending tableau and added a frog revolve.
 - Added the mark system and also took notes on the best score.
 - Design the yellow fly; every third fly will be yellow. When the frog eats it, the time will increase 3 seconds.
@@ -62,7 +62,7 @@ Frog revolve motion inspired by:
 https://editor.p5js.org/elinsterz/sketches/evrSX1kzZ
 
 Sound effect from:
-Mixkit Free Sound Library: https://mixkit.co/free-sound-effects/pop/
+Mixkit Free Sound Library: "Game blood pop slide" https://mixkit.co/free-sound-effects/pop/
 
 
 - [Ideas](./ideas.md)
