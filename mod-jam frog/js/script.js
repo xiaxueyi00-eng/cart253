@@ -1,6 +1,15 @@
 /**
  *Frog Time!
+ *  A timing-based frog game where the player clicks to shoot the frog's tongue
+ * and catch flies before time runs out.
  *
+ * - Black fly = +1 score
+ * - Every third fly becomes yellow → +3 seconds bonus & frog turns yellow briefly
+ * - Goal: Reach 8 points before time ends
+ *
+ * Controls:
+ * Move mouse → move frog left/right
+ * Click → shoot tongue
  * Made with p5
  * https://p5js.org/
  */
@@ -9,35 +18,29 @@
 
 let gameState = "start";
 let score = 0;
-let sEat;
+let sounds;
 let bestScore = 0;
 let startTime;
-let baseGameDurationMs = 10000; // 10 seconds (in milliseconds)
+let baseGameDurationMs = 10000;
 let extraTimeMs = 0;
 
-
-
-
-
-
-// Our frog
+// ==== Frog Object ====
 const frog = {
     body: {
         x: 320,
         y: 460,
         size: 150,
-        color: "#00ff00" // Added color attribute
+        color: "#00ff00"
     },
     tongue: {
         x: undefined,
         y: 400,
         size: 20,
         speed: 20,
-        state: "idle" // idle, outbound, inbound
+        state: "idle"
     }
 };
 
-// Fly
 const fly = {
     x: 0,
     y: 200,
@@ -51,16 +54,21 @@ const fly = {
 
 let flyCount = 0;
 
+// === Preload assets (runs before setup) ===
 function preload() {
-    sEat = loadSound("assets/sounds/mixkit-game-blood-pop-slide-2363.wav");
+    sounds = {
+        eat: loadSound("assets/sounds/mixkit-game-blood-pop-slide-2363.wav")
+    };
 }
+
+// === Setup canvas & initial state ===
 function setup() {
     createCanvas(640, 480);
-    sEat.setVolume(0.6);
+    sounds.eat.setVolume(0.6);
     resetFly();
 }
 
-// --- DRAW LOOP ---
+// === Main draw loop ===
 function draw() {
     if (gameState === "start") {
         drawStartScreen();
@@ -72,7 +80,10 @@ function draw() {
 }
 
 
-// --- Start Screen ---
+// === START SCREEN ===
+/**
+ * Shows the title and waits for the player to click to start.
+ */
 function drawStartScreen() {
     background("#90d195");
     textAlign(CENTER, CENTER);
@@ -82,16 +93,20 @@ function drawStartScreen() {
     textSize(20);
     text("Click the frog to start!", width / 2, height / 2 + 40);
     drawFrog();
-
+    // Click anywhere to start game
     if (mouseIsPressed) {
         resetGame();
         gameState = "play";
-        startTime = millis(); // start timer here
+        startTime = millis();
     }
 }
 
 
-// --- Main Game Loop ---
+// === GAMEPLAY LOOP ===
+/**
+ * Handles all animations, interactions, UI, timer, and win/lose conditions.
+ *
+ */
 function drawGame() {
     drawBackground();
     moveFly();
@@ -102,17 +117,26 @@ function drawGame() {
     checkTongueFlyOverlap();
     printScore();
 
+    // Compute remaining time (base time + bonus time - elapsed)
     const elapsed = millis() - startTime;
     const remainingSec = max(0, (baseGameDurationMs + extraTimeMs - elapsed) / 1000);
+
+    // Display time
     fill(0);
     textSize(20);
     textAlign(LEFT, TOP);
     text(nf(remainingSec.toFixed(1), 2, 1) + "s", 10, 10);
 
+    // Time runs out → end game
     if (elapsed >= baseGameDurationMs + extraTimeMs) {
         gameState = "end";
     }
 }
+// === BACKGROUND ===
+/**
+ * Draws sky, water, clouds, and lotus leaves for visual setting.
+ */
+
 function drawBackground() {
     background(5, 172, 223);
     noStroke();
@@ -166,7 +190,7 @@ function drawCloud(x, y, s = 1) {
 
 }
 
-
+// === SCORE DISPLAY ===
 function printScore() {
     textAlign(LEFT);
     fill(50);
@@ -175,35 +199,38 @@ function printScore() {
 }
 
 
-// --- End Screen ---
+// === END SCREEN ===
+/**
+ * Shows win/lose message and spinning frog animation.
+ */
 function drawEndScreen() {
     background("black");
     textAlign(CENTER, CENTER);
     fill("yellow");
     textSize(50);
-
-
     push();
 
+    // Save old frog coordinates before rotating
     let oldX = frog.body.x;
     let oldY = frog.body.y;
 
+    // Temporarily move frog to origin for rotation animation
     frog.body.x = 0;
     frog.body.y = 0;
 
     translate(width / 2, height / 2 + 40);
     rotate(frameCount * 0.05);
     scale(1.0);
-
     drawFrog();
+    pop();
 
+    // Restore frog original position
     frog.body.x = oldX;
     frog.body.y = oldY;
 
-    pop();
-
+    // Update best score after round ends
     if (score > bestScore) bestScore = score;
-
+    // Win/Loss text
     if (score >= 8) {
         text("YOU WIN!", width / 2, height / 2 - 120);
     } else {
@@ -215,7 +242,7 @@ function drawEndScreen() {
     text("Your Score: " + score, width / 2, height / 2 + 20);
     text("Best Score: " + bestScore, width / 2, height / 2 + 60);
     text("One More Try ?", width / 2, height / 2 + 120);
-
+    // Click anywhere → return to start screen
     if (mouseIsPressed) {
         resetGame();
         gameState = "start";
@@ -223,7 +250,7 @@ function drawEndScreen() {
 }
 
 
-// --- Helper Functions ---
+// === RESET GAME STATE FOR NEW ROUND ===
 function resetGame() {
     score = 0;
     extraTimeMs = 0;
@@ -232,7 +259,10 @@ function resetGame() {
     frog.tongue.y = 400;
     resetFly();
 }
-
+// === FLY MOVEMENT ===
+/**
+ * Handles normal fly movement and captured-fly animation.
+ */
 function moveFly() {
     // If the fly has been captured by the frog
     if (fly.captured) {
@@ -262,7 +292,7 @@ function moveFly() {
         }
     }
 }
-
+// === DRAW FLY ===
 function drawFly() {
     push();
     noStroke();
@@ -273,59 +303,62 @@ function drawFly() {
     pop();
 }
 
+// === FLY WINGS ANIMATION ===
 function drawWings(x, y) {
-    let wingFlap = sin(frameCount * 0.3) * 4;
-    let wingSpan = 10;
-    let wingYOffset = 5;
-    let wingXOffset = wingFlap;
-    let birdSize = fly.size * 3;
+    let flap = sin(frameCount * 0.3) * 4;
+    let span = 10;
 
     fill(255, 255, 255, 120);
-    ellipse(x - wingSpan - wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
-    ellipse(x + wingSpan + wingXOffset, y - wingYOffset, birdSize / 2, birdSize / 3);
-
-
+    ellipse(x - span - flap, y - 5, fly.size * 1.5, fly.size * 1);
+    ellipse(x + span + flap, y - 5, fly.size * 1.5, fly.size * 1);
 }
 
+
+// === SPAWN / RESET FLY ===
 function resetFly() {
     flyCount++;
+
     fly.x = 0;
     fly.y = random(0, 300);
 
+    // Every 3rd fly is yellow
     if (flyCount % 3 === 0) {
-        fly.color = "#e5ff00"; // yellow fly
+        fly.color = "#e5ff00"; // Yellow fly (bonus)
     } else {
-        fly.color = "#000000"; // black fly
+        fly.color = "#000000"; // Normal black fly
     }
-
-
-
 }
 
+
+// === FROG MOVEMENT (mouse controlled) ===
 function moveFrog() {
     frog.body.x = mouseX;
 }
 
+
+// === TONGUE SHOOTING ANIMATION ===
 function moveTongue() {
     frog.tongue.x = frog.body.x;
 
     if (frog.tongue.state === "outbound") {
         frog.tongue.y -= frog.tongue.speed;
         if (frog.tongue.y <= 0) frog.tongue.state = "inbound";
-    } else if (frog.tongue.state === "inbound") {
+    }
+    else if (frog.tongue.state === "inbound") {
         frog.tongue.y += frog.tongue.speed;
         if (frog.tongue.y >= height) frog.tongue.state = "idle";
     }
 }
 
+
+// === DRAW FROG ===
 function drawFrog() {
-    // === Tongue only in play state ===
+    // Draw tongue only during gameplay
     if (gameState === "play") {
-        // Tongue line (draw BEFORE body so the body hides the base)
         push();
         stroke("#ff0000");
         strokeWeight(frog.tongue.size);
-        line(frog.tongue.x, frog.tongue.y, frog.body.x, frog.body.y - 20); // 🔥 从嘴的位置开始
+        line(frog.tongue.x, frog.tongue.y, frog.body.x, frog.body.y - 20);
         pop();
 
         // Tongue tip
@@ -336,29 +369,31 @@ function drawFrog() {
         pop();
     }
 
-    // === Frog body ===
+    // Frog body
     push();
     fill(frog.body.color);
     noStroke();
     ellipse(frog.body.x, frog.body.y, frog.body.size);
     pop();
 
-    // === Mouth (this hides tongue root) ===
+    // Mouth
     push();
     fill("#ff4d4d");
     noStroke();
     ellipse(frog.body.x, frog.body.y - 20, 30, 22);
     pop();
 
-    // === Eyes ===
+    // Eyes
     drawEyes();
 }
 
-//  Eyes stay OUTSIDE drawFrog()
+
+// === EYE BLINK ANIMATION ===
 function drawEyes() {
-    let blink = frameCount % 60 < 10; // blink animation
+    let blink = frameCount % 60 < 10;
     let eyeHeight = blink ? 10 : 35;
 
+    // White eye shapes
     push();
     fill("white");
     noStroke();
@@ -366,6 +401,7 @@ function drawEyes() {
     ellipse(frog.body.x + 40, frog.body.y - 70, 35, eyeHeight);
     pop();
 
+    // Pupils
     push();
     fill("black");
     noStroke();
@@ -374,39 +410,41 @@ function drawEyes() {
     pop();
 }
 
+
+// === DETECT AND PROCESS FLY CATCHING ===
 function checkTongueFlyOverlap() {
-    // Measure the distance between the tongue tip and the fly
+    // Distance between tongue tip & fly center
     const d = dist(frog.tongue.x, frog.tongue.y, fly.x, fly.y);
+
+    // Overlap threshold
     const eaten = (d < frog.tongue.size / 2 + fly.size / 2);
 
-    // Only trigger once (prevent scoring twice)
+    // Only process catch once
     if (eaten && !fly.captured) {
-        sEat.play(); // Play eat sound once
+        sounds.eat.play(); // FIXED: use correct sound reference ✅
 
-        // Increase score
-        score += 1;
+        score += 1; // Add score for any fly
 
-        // If the fly is yellow, give extra time and change frog color
+        // If yellow fly → bonus effects
         if (fly.color === "#e5ff00") {
-            frog.body.color = "#e5ff00"; // Frog turns yellow temporarily
-            extraTimeMs += 3000;        // Bonus time
-        }
-        // Otherwise, it's a normal black fly
-        else {
-            frog.body.color = "#00ff00"; // Return to normal green
+            frog.body.color = "#e5ff00"; // Visual feedback
+            extraTimeMs += 3000;         // +3 seconds time
+        } else {
+            frog.body.color = "#00ff00"; // Reset to green for black flies
         }
 
-        // Do not remove the fly instantly — animate it returning to the frog
-        fly.captured = true;
-        frog.tongue.state = "inbound"; // Start tongue returning animation
+        fly.captured = true;            // Trigger pull-in animation
+        frog.tongue.state = "inbound";  // Tongue begins returning
     }
 
-    // Win condition: reach target score
+    // If score reaches target → win immediately
     if (score >= 8) {
         gameState = "end";
     }
 }
-// Only shoot tongue during play state
+
+
+// === SHOOT TONGUE ON CLICK ===
 function mousePressed() {
     if (gameState === "play" && frog.tongue.state === "idle") {
         frog.tongue.state = "outbound";
