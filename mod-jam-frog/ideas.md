@@ -3,6 +3,8 @@
 
 This is an effortless, amusing, and timing game. The player controls the frog to eat the most flies before time runs out. 
 
+Added a gradually changing background to make the player's eyes relax.
+
 The frog eats flies, but it gets harder and harder to catch them.
 
 When the game starts, it will have a limited timer.

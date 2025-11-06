@@ -42,6 +42,9 @@ https://editor.p5js.org/zm1029/sketches/nvDVlGF1W
 Frog revolve motion inspired by:
 https://editor.p5js.org/elinsterz/sketches/evrSX1kzZ
 
+Background motion inspired by:
+https://editor.p5js.org/evebdn/sketches/O9G35ueZv
+
 Sound effect from:
 Mixkit Free Sound Library: https://mixkit.co/free-sound-effects/pop/
 

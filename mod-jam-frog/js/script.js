@@ -141,18 +141,16 @@ function drawBackground() {
     let c1, c2;
     c1 = color(120, 190, 255);
     c2 = color(90, 230, 170);
+
     for (let y = 0; y < height; y++) {
         let n = map(y, 0, height, 0, 1);
         let newc = lerpColor(c1, c2, n);
         stroke(newc);
         line(0, y, width, y);
     }
+
     fill(5, 223, 143);
-
     noStroke();
-    noStroke();
-
-
 
     // clouds
     drawCloud(110, 80, 1.0);
