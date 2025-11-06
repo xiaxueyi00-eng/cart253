@@ -26,6 +26,18 @@ Click to shoot the frog’s tongue and try to eat as many flies as possible befo
 - The background includes a **sky, clouds, green lake, and lily pads**
 - The end screen features a **rotating frog animation**
 
+## Modifications Made
+
+- Added a new title and started with the game explanation
+- Added an ending tableau and added a frog revolve.
+- Added the mark system and also took notes on the best score.
+- Design the yellow fly; every third fly will be yellow. When the frog eats it, the time will increase 3 seconds.
+- Realize the frog tongue launch animation (outbound → inbound → idle).
+- The fly moves in a sine wave pattern and is pulled back to the frog's mouth when captured (lerp).
+- Added blinking eyes for the frog, a visual animation.
+- Changed the background color with a sky-to-lake color gradient.
+- Added clouds and lotus leaves increase details.
+-  Added an eating sound effect to provide clearer feedback when catching a fly.
 
 ## Credits
 Made by Xueyi Xia  
