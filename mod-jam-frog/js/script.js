@@ -57,7 +57,7 @@ let flyCount = 0;
 // === Preload assets (runs before setup) ===
 function preload() {
     sounds = {
-        eat: loadSound("assets/sounds/mixkit-game-blood-pop-slide-2363.wav")
+        eat: loadSound("assets/sounds/eat.mp3")
     };
 }
 
