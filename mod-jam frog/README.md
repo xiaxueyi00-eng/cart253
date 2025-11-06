@@ -1,4 +1,4 @@
-# Frogfrogfrog
+# Frog Time !
 A simple, fun, and timing-based mini game made with **p5.js**.
 
 [Play it!](https://xiaxueyi00-eng.github.io/cart253/mod-jam%20frog/)
