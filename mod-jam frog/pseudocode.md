@@ -66,9 +66,10 @@ draw()
             bestScore = score
         show win or lose text
         show score and bestScore
-        if mouse pressed
-            gameState = "start"
-
+      if mouse pressed anywhere
+    resetGame()
+    startTime = current time
+    gameState = "play"
 
 resetFly()
     flyCount += 1
