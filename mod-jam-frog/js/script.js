@@ -147,6 +147,7 @@ function drawBackground() {
     drawCloud(110, 80, 1.0);
     drawCloud(300, 60, 1.3);
     drawCloud(520, 85, 0.9);
+    drawCloud(200, 120, 1.6);
 
     // Lotus leaves base color
     noStroke();
