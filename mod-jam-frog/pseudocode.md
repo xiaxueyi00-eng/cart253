@@ -45,10 +45,10 @@ draw()
             gameState = "play"
 
     else if gameState == "play"
-        draw background
+        draw background  // gradient sky + clouds + lily pads
         moveFly()       
         drawFly()
-        moveFrog()
+        moveFrog() // includes eye blink animation
         moveTongue()
         drawFrog()
         checkTongueFlyOverlap()
