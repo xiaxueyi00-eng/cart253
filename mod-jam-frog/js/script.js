@@ -167,8 +167,6 @@ function drawBackground() {
     ellipse(400, height - 40, 180, 70);
     ellipse(550, height - 80, 100, 45);
 
-
-
     // Leaf lines (simple veins)
     stroke("#2e7d32");
     strokeWeight(2);

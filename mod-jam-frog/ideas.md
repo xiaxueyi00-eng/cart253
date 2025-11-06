@@ -23,8 +23,8 @@
 
 - For the game background, I added the sky, clouds, green water, and lily pads, creating a funny and calm pond environment.
 
-- When the frog eat the fly will have voice.
+- The fly will have a voice once the frog eats it.
 
-- At the end of the game, a frog will appear, spinning slowly and playfully ending.
+- The game will conclude with a playful appearance of a frog.
 
 - At the end of the game, it will show the game’s highest score, increasing the player’s desire to win.
