@@ -1,26 +1,21 @@
 /**
- * Title of Project
- * Author Name
- * 
- * HOW EMBARRASSING! I HAVE NO DESCRIPTION OF MY PROJECT!
- * PLEASE REMOVE A GRADE FROM MY WORK IF IT'S GRADED!
+ * Game Menu + Intro Animation
+ * Author: xueyi
  */
-
-
 
 "use strict";
 
-let stage = "intro";  // intro → sunAppear → rules → game
+let stage = "intro";  // intro → sunAppear → rules → gameX
 
-// clouds 
-let armLeft = [
+/* ---------------- CLOUD POSITIONS ---------------- */
+let cloudLeft = [
     { x: 450, y: -50 },
     { x: 420, y: 80 },
     { x: 480, y: 150 },
-    { x: 600, y: 0.9 },
+    { x: 600, y: 0 },
 ];
 
-let armRight = [
+let cloudRight = [
     { x: 450, y: -50 },
     { x: 480, y: 80 },
     { x: 430, y: 150 },
@@ -40,27 +35,19 @@ function setup() {
 function draw() {
     background(204, 229, 255);
 
-    if (stage === "intro") {
-        runIntroAnimation();
-    }
-    else if (stage === "sunAppear") {
-        runSunAppear();
-    }
-    else if (stage === "rules") {
-        runRulesScreen();
-    }
-    else if (stage === "game") {
-        runGame();
-    }
+    if (stage === "intro") runIntroAnimation();
+    else if (stage === "sunAppear") runSunAppear();
+    else if (stage === "rules") runRulesScreen();
+    else if (stage === "game1") runGame1();
+    else if (stage === "game2") runGame2();
+    else if (stage === "game3") runGame3();
 }
-function drawArmsCircle(cx, cy, radius) {
+
+/* ---------------- CLOUD GRADIENT CIRCLE ---------------- */
+function drawCloudCircle(cx, cy, radius) {
     let ctx = drawingContext;
 
-    let gradient = ctx.createLinearGradient(
-        cx, cy - radius,
-        cx, cy + radius
-    );
-
+    let gradient = ctx.createLinearGradient(cx, cy - radius, cx, cy + radius);
     gradient.addColorStop(1, "rgba(148, 199, 244, 1)");
     gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
 
@@ -69,58 +56,53 @@ function drawArmsCircle(cx, cy, radius) {
     ctx.arc(cx, cy, radius, 0, TWO_PI);
     ctx.fill();
 }
-// -------------------- CLOUD INTRO ---------------------
+
+/* ---------------- INTRO CLOUD ANIMATION ---------------- */
 function runIntroAnimation() {
     let cx = width / 2;
     let cy = height / 2;
 
-    noStroke();
-
     let allOpened = true;
 
-    // LEFT
-    for (let c of armLeft) {
-        drawArmsGradient(c.x, cy + c.y, 120);
-        c.x -= 3;
-        if (c.x > -300) allOpened = false;
+    for (let c of cloudLeft) {
+        drawCloudCircle(c.x, cy + c.y, 120);
+        c.x -= 6;
+        if (c.x > -100) allOpened = false;
     }
 
-    // RIGHT
-    for (let c of armRight) {
-        drawArmsGradient(c.x, cy + c.y, 120);
-        c.x += 3;
-        if (c.x < width + 300) allOpened = false;
+    for (let c of cloudRight) {
+        drawCloudCircle(c.x, cy + c.y, 120);
+        c.x += 6;
+        if (c.x < width + 100) allOpened = false;
     }
 
     if (allOpened) stage = "sunAppear";
 }
-// -------------------- SUN APPEAR ---------------------
+
+/* ---------------- SUN APPEAR ---------------- */
 function runSunAppear() {
     let cx = width / 2;
     let cy = height / 2;
 
-    noStroke();
-
-
     glowSize += glowGrow;
     if (glowSize > 60 || glowSize < 0) glowGrow *= -1;
-    drawPinkGradientCircle(cx, cy, sunRadius + 100);
+
+    drawPinkGradientCircle(cx, cy, sunRadius);
 
     if (sunRadius < 160) {
-        sunRadius += 4;
+        sunRadius += 5;
     } else {
         stage = "rules";
     }
 }
 
+/* ---------------- PINK GRADIENT SUN ---------------- */
 function drawPinkGradientCircle(cx, cy, radius) {
     let ctx = drawingContext;
 
     let gradient = ctx.createRadialGradient(
-        cx, cy, radius * 0.2,
-        cx, cy, radius
+        cx, cy, radius * 0.2, cx, cy, radius
     );
-
 
     gradient.addColorStop(0, "rgba(255, 230, 255, 1)");
     gradient.addColorStop(0.5, "rgba(242, 203, 242, 1)");
@@ -131,45 +113,132 @@ function drawPinkGradientCircle(cx, cy, radius) {
     ctx.arc(cx, cy, radius, 0, TWO_PI);
     ctx.fill();
 }
-// -------------------- RULES SCREEN ---------------------
+
+/* ---------------- RULES SCREEN ---------------- */
 function runRulesScreen() {
     let cx = width / 2;
     let cy = height / 2;
 
-    fill(204, 0, 204);
-    ellipse(cx, cy, sunRadius + glowSize + 290);
-
-    drawPinkGradientCircle(cx, cy, sunRadius + 100);
-
+    drawPinkGradientCircle(cx, cy, 200);
 
     fill(0);
     textSize(36);
-    text(
-        "GAME RULES:\n\n• Avoid obstacles\n• Collect items\n• Don't run out of time\n\nClick anywhere to begin",
-        cx,
-        cy
+    text("Game Time", cx, cy - 200);
+
+    drawCircularButtons(cx, cy, 220);
+}
+
+/* ---- DRAW BUTTON (FLOWER) ---------------- */
+function drawButton(x, y, label) {
+
+    noStroke();
+    fill(255, 180, 220);
+
+    let petalDist = 40;
+    let petalSize = 45;
+
+
+    ellipse(x, y - petalDist, petalSize + 10, petalSize);
+
+    ellipse(x, y + petalDist, petalSize + 10, petalSize);
+
+    ellipse(x - petalDist, y + 15, petalSize, petalSize);
+
+    ellipse(x + petalDist, y + 15, petalSize, petalSize);
+
+    ellipse(x - petalDist * 1.1, y - petalDist * 0.5, petalSize, petalSize);
+
+    ellipse(x + petalDist * 1.1, y - petalDist * 0.5, petalSize, petalSize);
+
+
+    fill(255, 230, 245);
+    ellipse(x, y, 80, 80);
+
+
+    fill(0);
+    textSize(20);
+    text(label, x, y);
+}
+
+/* ---------------- BUTTON HIT DETECTION ---------------- */
+function insideButton(mx, my, bx, by) {
+    return (
+        mx > bx - 130 &&
+        mx < bx + 130 &&
+        my > by - 30 &&
+        my < by + 30
     );
 }
 
-// -------------------- SWITCH TO GAME ---------------------
-function mousePressed() {
-    if (stage === "rules") {
-        stage = "game";
+/* ---------------- CIRCULAR BUTTONS ---------------- */
+function drawCircularButtons(cx, cy, radius) {
+    let labels = ["Game 1", "Game 2", "Game 3"];
+
+    for (let i = 0; i < 3; i++) {
+
+        let bx, by;
+
+        if (i === 0) {
+
+            bx = cx;
+            by = cy + radius;
+        }
+        else {
+
+            let angle = TWO_PI / 3 * i - PI / 2;
+            bx = cx + cos(angle) * radius;
+            by = cy + sin(angle) * radius;
+        }
+
+        drawButton(bx, by, labels[i]);
     }
 }
 
-// -------------------- GAME ---------------------
-function runGame() {
-    background(255, 240, 120);
+function getCircularButtons(cx, cy, radius) {
+    let labels = ["game1", "game2", "game3"];
+    let arr = [];
 
-    fill(0);
-    textSize(48);
-    text("Game Start", width / 2, height / 2);
+    for (let i = 0; i < 3; i++) {
+        let angle = TWO_PI / 3 * i - PI / 2;
+        arr.push({
+            label: labels[i],
+            x: cx + cos(angle) * radius,
+            y: cy + sin(angle) * radius
+        });
+    }
+    return arr;
 }
 
-// -------------------- CLOUD SHAPE ---------------------
-function drawArmsCircle(x, y) {
-    ellipse(x, y, 180, 130);
-    ellipse(x + 70, y, 110, 90);
-    ellipse(x - 70, y, 110, 90);
+/* ---------------- CLICK HANDLER ---------------- */
+function mousePressed() {
+    if (stage === "rules") {
+        let cx = width / 2;
+        let cy = height / 2;
+        let buttons = getCircularButtons(cx, cy, 220);
+
+        for (let b of buttons) {
+            if (insideButton(mouseX, mouseY, b.x, b.y)) {
+                stage = b.label;
+            }
+        }
+    }
+}
+
+/* ---------------- GAME VARIATIONS ---------------- */
+function runGame1() {
+    background(255, 240, 200);
+    textSize(50);
+    text("Game 1 Start!", width / 2, height / 2);
+}
+
+function runGame2() {
+    background(200, 255, 220);
+    textSize(50);
+    text("Game 2 Start!", width / 2, height / 2);
+}
+
+function runGame3() {
+    background(220, 200, 255);
+    textSize(50);
+    text("Game 3 Start!", width / 2, height / 2);
 }
