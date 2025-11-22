@@ -9,6 +9,8 @@ let stage = "intro";  // intro → sunAppear → rules → gameX
 let game1Started = false;  // whether the plane game has started
 let planeX = 450;   // initial X-position of the plane
 let planeY = 750;   // fixed Y-position of the plane near the bottom
+let bgY1 = 0;      // first background Y-position
+let bgY2 = -900;   // second background starts above the canvas
 /* ---------------- CLOUD POSITIONS ---------------- */
 let cloudLeft = [
     { x: 450, y: -50 },
@@ -273,26 +275,40 @@ function runGame1() {
     }
 
     // ---------------- GAME PLAY ----------------
-    background(180, 210, 255);  // slightly darker background to see plane
+    // -------- MOVING BACKGROUND --------
 
-    // Draw Airplane
-    fill(30, 60, 140); // darker blue
+    // BACKGROUND 1
+    fill(170, 200, 255);
+    rect(450, bgY1 + 450, 900, 900);
+
+    // BACKGROUND 2
+    fill(180, 210, 255);
+    rect(450, bgY2 + 450, 900, 900);
+
+    // move them downward
+    bgY1 += 2;
+    bgY2 += 2;
+
+    // when one goes off screen, reset it above
+    if (bgY1 > 900) bgY1 = -900;
+    if (bgY2 > 900) bgY2 = -900;
+
+
+    // -------- DRAW PLANE --------
+    fill(30, 60, 140);
     triangle(
         planeX - 25, planeY + 20,
         planeX + 25, planeY + 20,
         planeX, planeY - 30
     );
 
-    // Movement
-    // plane follows mouse X
+    // movement (mouse follow)
     planeX = mouseX;
-    planeX = constrain(planeX, 50, 850);
-
-    // Keep inside canvas
     planeX = constrain(planeX, 50, 850);
 
     drawBackButton();
 }
+
 
 function runGame2() {
     background(200, 255, 220);
