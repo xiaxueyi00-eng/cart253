@@ -6,7 +6,9 @@
 "use strict";
 
 let stage = "intro";  // intro → sunAppear → rules → gameX
-
+let game1Started = false;  // whether the plane game has started
+let planeX = 450;   // initial X-position of the plane
+let planeY = 750;   // fixed Y-position of the plane near the bottom
 /* ---------------- CLOUD POSITIONS ---------------- */
 let cloudLeft = [
     { x: 450, y: -50 },
@@ -201,7 +203,19 @@ function getCircularButtons(cx, cy, radius) {
 }
 /* ---------------- CLICK HANDLER ---------------- */
 function mousePressed() {
-
+    // Start button for game1
+    if (stage === "game1" && !game1Started) {
+        // check if Start button is clicked
+        if (
+            mouseX > width / 2 - 100 &&
+            mouseX < width / 2 + 100 &&
+            mouseY > height / 2 - 10 &&
+            mouseY < height / 2 + 50
+        ) {
+            game1Started = true; // start the plane game
+            return;
+        }
+    }
 
     if (stage === "rules") {
         let cx = width / 2;
@@ -211,18 +225,22 @@ function mousePressed() {
         for (let b of buttons) {
             if (insideButton(mouseX, mouseY, b.x, b.y)) {
                 stage = b.label;
+
+                if (b.label === "game1") {
+                    game1Started = false;
+                    planeX = 450;
+                }
+            }
+        }
+
+
+        if (stage === "game1" || stage === "game2" || stage === "game3") {
+            if (insideBackButton(mouseX, mouseY)) {
+                stage = "rules";
             }
         }
     }
-
-
-    if (stage === "game1" || stage === "game2" || stage === "game3") {
-        if (insideBackButton(mouseX, mouseY)) {
-            stage = "rules";
-        }
-    }
 }
-
 function drawBackButton() {
     fill(192, 192, 192);
     rect(80, 50, 120, 50, 15);
@@ -238,12 +256,44 @@ function insideBackButton(mx, my) {
 
 /* ---------------- GAME VARIATIONS ---------------- */
 function runGame1() {
-    background(255, 240, 200);
-    textSize(50);
-    text("Game 1 Start!", width / 2, height / 2);
+
+    // If game not started → show START button
+    if (!game1Started) {
+        background(255, 240, 200);
+
+        fill(255, 200, 200);
+        rect(width / 2, height / 2 + 20, 200, 60, 20);
+
+        fill(0);
+        textSize(28);
+        text("Start", width / 2, height / 2 + 20);
+
+        drawBackButton();
+        return;
+    }
+
+    // ---------------- GAME PLAY ----------------
+    background(180, 210, 255);  // slightly darker background to see plane
+
+    // Draw Airplane
+    fill(30, 60, 140); // darker blue
+    triangle(
+        planeX - 25, planeY + 20,
+        planeX + 25, planeY + 20,
+        planeX, planeY - 30
+    );
+
+    // Movement
+    // plane follows mouse X
+    planeX = mouseX;
+    planeX = constrain(planeX, 50, 850);
+
+    // Keep inside canvas
+    planeX = constrain(planeX, 50, 850);
 
     drawBackButton();
 }
+
 function runGame2() {
     background(200, 255, 220);
     textSize(50);
