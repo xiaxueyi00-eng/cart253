@@ -125,14 +125,14 @@ function runRulesScreen() {
     textSize(36);
     text("Game Time", cx, cy - 200);
 
-    drawCircularButtons(cx, cy, 220);
+    drawCircularButtons(cx, cy, 300);
 }
 
 /* ---- DRAW BUTTON (FLOWER) ---------------- */
 function drawButton(x, y, label) {
 
     noStroke();
-    fill(255, 180, 220);
+    fill(255, 153, 204);
 
     let petalDist = 40;
     let petalSize = 45;
@@ -151,7 +151,7 @@ function drawButton(x, y, label) {
     ellipse(x + petalDist * 1.1, y - petalDist * 0.5, petalSize, petalSize);
 
 
-    fill(255, 230, 245);
+    fill(255, 204, 229);
     ellipse(x, y, 80, 80);
 
 
@@ -172,49 +172,41 @@ function insideButton(mx, my, bx, by) {
 
 /* ---------------- CIRCULAR BUTTONS ---------------- */
 function drawCircularButtons(cx, cy, radius) {
-    let labels = ["Game 1", "Game 2", "Game 3"];
+    let displayLabels = ["Game 1", "Game 2", "Game 3"];
+    let valueLabels = ["game1", "game2", "game3"];
 
     for (let i = 0; i < 3; i++) {
 
-        let bx, by;
+        let angle = TWO_PI / 3 * i - PI / 2;
+        let bx = cx + cos(angle) * radius;
+        let by = cy + sin(angle) * radius;
 
-        if (i === 0) {
-
-            bx = cx;
-            by = cy + radius;
-        }
-        else {
-
-            let angle = TWO_PI / 3 * i - PI / 2;
-            bx = cx + cos(angle) * radius;
-            by = cy + sin(angle) * radius;
-        }
-
-        drawButton(bx, by, labels[i]);
+        drawButton(bx, by, displayLabels[i]);
     }
 }
 
 function getCircularButtons(cx, cy, radius) {
-    let labels = ["game1", "game2", "game3"];
+    let valueLabels = ["game1", "game2", "game3"];
     let arr = [];
 
     for (let i = 0; i < 3; i++) {
         let angle = TWO_PI / 3 * i - PI / 2;
         arr.push({
-            label: labels[i],
+            label: valueLabels[i],
             x: cx + cos(angle) * radius,
             y: cy + sin(angle) * radius
         });
     }
     return arr;
 }
-
 /* ---------------- CLICK HANDLER ---------------- */
 function mousePressed() {
+
+
     if (stage === "rules") {
         let cx = width / 2;
         let cy = height / 2;
-        let buttons = getCircularButtons(cx, cy, 220);
+        let buttons = getCircularButtons(cx, cy, 300);
 
         for (let b of buttons) {
             if (insideButton(mouseX, mouseY, b.x, b.y)) {
@@ -222,6 +214,26 @@ function mousePressed() {
             }
         }
     }
+
+
+    if (stage === "game1" || stage === "game2" || stage === "game3") {
+        if (insideBackButton(mouseX, mouseY)) {
+            stage = "rules";
+        }
+    }
+}
+
+function drawBackButton() {
+    fill(192, 192, 192);
+    rect(80, 50, 120, 50, 15);
+
+    fill(0);
+    textSize(20);
+    text("Back", 80, 50);
+}
+
+function insideBackButton(mx, my) {
+    return (mx > 20 && mx < 140 && my > 25 && my < 75);
 }
 
 /* ---------------- GAME VARIATIONS ---------------- */
@@ -229,16 +241,22 @@ function runGame1() {
     background(255, 240, 200);
     textSize(50);
     text("Game 1 Start!", width / 2, height / 2);
-}
 
+    drawBackButton();
+}
 function runGame2() {
     background(200, 255, 220);
     textSize(50);
     text("Game 2 Start!", width / 2, height / 2);
+
+    drawBackButton();
 }
 
 function runGame3() {
     background(220, 200, 255);
     textSize(50);
     text("Game 3 Start!", width / 2, height / 2);
+
+    drawBackButton();
 }
+
