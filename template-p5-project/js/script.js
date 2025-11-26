@@ -35,10 +35,13 @@ let enemyCount = 0;
 let enemySpawnInterval = 40;
 
 let speedLines = [];
-//======voice=====/
+
+let timedMonsters = [];
+
+// ====== SOUNDS ======
 let rainSound;
 let shootSound;
-
+// ====== PRELOAD ======
 function preload() {
     rainSound = loadSound("assets/sounds/rain.wav");
     shootSound = loadSound("assets/sounds/shoot.wav");
@@ -118,7 +121,7 @@ let cloudLeft = [
 let cloudRight = [
     { x: 450, y: -50 },
     { x: 480, y: 80 },
-    { x: 430, y: 150 },
+    { x: 40, y: 150 },
     { x: 300, y: 60 },
 ];
 
@@ -546,6 +549,7 @@ function runGame1() {
     if (game1Stage === "play") {
         push();
 
+
         // background scroll
         runRainBackground();
         bgY1 += 5;
@@ -564,10 +568,44 @@ function runGame1() {
             ellipse(planeX, planeY, planeSize + 40 + i * 20);
         }
 
-        // enemies
         if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
         updateBullets1();
         updateEnemies1();
+        // ===== TIME-BASED MONSTER TRIGGERS =====
+
+        if (t === 5) {
+            timedMonsters.push({
+                x: random(50, 850),
+                y: -40,
+                size: 60,
+                speed: 3,
+                color: "#8800ff",
+            });
+        }
+
+
+        if (t === 12) {
+            timedMonsters.push({
+                x: random(50, 850),
+                y: -40,
+                size: 70,
+                speed: 2.5,
+                color: "#00ccff",
+            });
+        }
+
+
+        if (t === 20) {
+            timedMonsters.push({
+                x: width / 2,
+                y: -80,
+                size: 120,
+                speed: 1.5,
+                color: "#ff6600",
+            });
+        }
+
+
 
         // UI
         fill(0);
@@ -575,6 +613,7 @@ function runGame1() {
         text("Score: " + game1Score, width / 2, 55);
 
         let elapsed = millis() - game1StartTime;
+        let t = floor(elapsed / 1000);
         let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
 
         textSize(22);
