@@ -11,6 +11,26 @@ let planeX = 450;   // initial X-position of the plane
 let planeY = 750;   // fixed Y-position of the plane near the bottom
 let bgY1 = 0;      // first background Y-position
 let bgY2 = -900;   // second background starts above the canvas
+
+/* ---------------- GAME1 VARIABLES ---------------- */
+let game1Stage = "start";  // start → play → end
+let game1Score = 0;
+let game1BestScore = 0;
+
+let game1StartTime = 0;
+let baseTimeMs = 40000;
+let bonusTimeMs = 0;
+
+// plane
+let planeSize = 40;
+
+// bullets
+let bullets = [];
+
+// enemies
+let enemies = [];
+let enemyCount = 0;
+let enemySpawnInterval = 40;
 /* ---------------- CLOUD POSITIONS ---------------- */
 let cloudLeft = [
     { x: 450, y: -50 },
@@ -161,7 +181,7 @@ function drawButton(x, y, label) {
 
     fill(0);
     textSize(20);
-    text(label, x, y);
+    text(label, x - 3, y);
 }
 
 /* ---------------- BUTTON HIT DETECTION ---------------- */
@@ -203,113 +223,292 @@ function getCircularButtons(cx, cy, radius) {
     }
     return arr;
 }
-/* ---------------- CLICK HANDLER ---------------- */
+
 function mousePressed() {
-    // Start button for game1
-    if (stage === "game1" && !game1Started) {
-        // check if Start button is clicked
-        if (
-            mouseX > width / 2 - 100 &&
-            mouseX < width / 2 + 100 &&
-            mouseY > height / 2 - 10 &&
-            mouseY < height / 2 + 50
-        ) {
-            game1Started = true; // start the plane game
-            return;
-        }
-    }
 
+    /* ------------------------------------------------------
+       RULES PAGE: Click flower buttons
+       ------------------------------------------------------ */
     if (stage === "rules") {
-        let cx = width / 2;
-        let cy = height / 2;
-        let buttons = getCircularButtons(cx, cy, 300);
+        let cx = 450;
+        let cy = 450;
+        let radius = 300;
 
+        let buttons = getCircularButtons(cx, cy, radius);
         for (let b of buttons) {
             if (insideButton(mouseX, mouseY, b.x, b.y)) {
                 stage = b.label;
 
                 if (b.label === "game1") {
-                    game1Started = false;
-                    planeX = 450;
+                    game1Stage = "start";
+                    resetGame1();
                 }
+                return;
             }
         }
+        return;
+    }
 
+    /* ------------------------------------------------------
+       GAME 1 : START SCREEN
+       ------------------------------------------------------ */
+    if (stage === "game1" && game1Stage === "start") {
+        if (
+            mouseX > width / 2 - 110 &&
+            mouseX < width / 2 + 110 &&
+            mouseY > height / 2 + 100 &&
+            mouseY < height / 2 + 180
+        ) {
+            console.log("START CLICKED");
+            game1Stage = "play";
+            resetGame1();
+            game1StartTime = millis();
+        }
+        return;
+    }
 
-        if (stage === "game1" || stage === "game2" || stage === "game3") {
-            if (insideBackButton(mouseX, mouseY)) {
-                stage = "rules";
+    /* ------------------------------------------------------
+       GAME 1 : PLAY
+       ------------------------------------------------------ */
+    if (stage === "game1" && game1Stage === "play") {
+        bullets.push({
+            x: planeX,
+            y: planeY - 20,
+            size: 10,
+            speed: 12,
+            active: true,
+        });
+        return;
+    }
+
+    /* ------------------------------------------------------
+       GAME 1 : END
+       ------------------------------------------------------ */
+    if (stage === "game1" && game1Stage === "end") {
+        if (
+            mouseX > width / 2 - 140 &&
+            mouseX < width / 2 + 140 &&
+            mouseY > height / 2 + 40 &&
+            mouseY < height / 2 + 120
+        ) {
+            game1Stage = "start";
+            stage = "rules";
+        }
+        return;
+    }
+
+    /* ------------------------------------------------------
+       BACK BUTTON
+       ------------------------------------------------------ */
+    if (
+        (stage === "game1" || stage === "game2" || stage === "game3") &&
+        insideBackButton(mouseX, mouseY)
+    ) {
+        stage = "rules";
+        return;
+    }
+}
+
+/* =============== PLAYING =============== */
+
+// scrolling background
+fill(170, 200, 255);
+rect(450, bgY1 + 450, 900, 900);
+
+fill(180, 210, 255);
+rect(450, bgY2 + 450, 900, 900);
+
+bgY1 += 5;
+bgY2 += 5;
+if (bgY1 > 900) bgY1 = -900;
+if (bgY2 > 900) bgY2 = -900;
+
+// plane follows mouse
+planeX = constrain(mouseX, 50, 850);
+drawPlane1();
+
+// spawn enemies
+if (frameCount % enemySpawnInterval === 0) {
+    spawnEnemy1();
+}
+
+// update bullets + enemies
+updateBullets1();
+updateEnemies1();
+
+// UI
+fill(0);
+textSize(30);
+textAlign(CENTER);
+text("Score: " + game1Score, width / 2, 55);
+
+let elapsed = millis() - game1StartTime;
+let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
+
+textSize(22);
+textAlign(LEFT, TOP);
+text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
+
+// time up
+if (remaining <= 0) {
+    if (game1Score > game1BestScore) game1BestScore = game1Score;
+    game1Stage = "end";
+}
+
+drawBackButton();
+
+function drawPlane1() {
+    fill(30, 60, 140);
+    triangle(
+        planeX - planeSize / 2, planeY + 20,
+        planeX + planeSize / 2, planeY + 20,
+        planeX, planeY - 30
+    );
+}
+/* ---------------- BULLET UPDATE ---------------- */
+function updateBullets1() {
+    for (let b of bullets) {
+        if (!b.active) continue;
+
+        b.y -= b.speed;
+        fill("#ff0000");
+        ellipse(b.x, b.y, b.size);
+
+        if (b.y < 0) b.active = false;
+
+        for (let e of enemies) {
+            if (!e.alive || e.absorbing) continue;
+            let d = dist(b.x, b.y, e.x, e.y);
+            if (d < e.size / 2 + b.size / 2) {
+                b.active = false;
+                handleHit1(e);
             }
         }
     }
 }
-function drawBackButton() {
-    fill(192, 192, 192);
-    rect(80, 50, 120, 50, 15);
+function spawnEnemy1() {
+    enemyCount++;
 
-    fill(0);
-    textSize(20);
-    text("Back", 80, 50);
+    let type = "normal";
+    let color = "#000";
+
+    if (enemyCount % 3 === 0) {
+        type = "yellow";
+        color = "#ffe600";
+    }
+    if (enemyCount % 4 === 0) {
+        type = "red";
+        color = "#ff0033";
+    }
+
+    enemies.push({
+        x: random(50, 850),
+        y: -20,
+        size: 40,
+        speed: random(2, 4),
+        alive: true,
+        absorbing: false,
+        type,
+        color
+    });
 }
 
-function insideBackButton(mx, my) {
-    return (mx > 20 && mx < 140 && my > 25 && my < 75);
+function updateEnemies1() {
+    for (let e of enemies) {
+        if (!e.alive) continue;
+
+        if (e.type === "red") {
+            if (dist(e.x, e.y, planeX, planeY) < 40) {
+                if (game1Score > game1BestScore) game1BestScore = game1Score;
+                game1Stage = "end";
+            }
+        }
+
+        if (e.absorbing) {
+            e.x = lerp(e.x, planeX, 0.2);
+            e.y = lerp(e.y, planeY, 0.2);
+            if (dist(e.x, e.y, planeX, planeY) < 10) {
+                e.alive = false;
+            }
+            continue;
+        }
+
+        e.y += e.speed;
+
+        fill(e.color);
+        ellipse(e.x, e.y, e.size);
+
+        if (e.y > height + 40) e.alive = false;
+    }
 }
 
-/* ---------------- GAME VARIATIONS ---------------- */
+function handleHit1(e) {
+    e.absorbing = true;
+    game1Score++;
+
+    if (e.type === "yellow") bonusTimeMs += 3000;
+
+    if (e.type === "red") {
+        if (game1Score > game1BestScore) game1BestScore = game1Score;
+        game1Stage = "end";
+    }
+}
+function resetGame1() {
+    game1Score = 0;
+    bonusTimeMs = 0;
+    bullets = [];
+    enemies = [];
+    enemyCount = 0;
+
+}
+/* ---------------- GAME 1 MAIN LOOP ---------------- */
 function runGame1() {
 
-    // If game not started → show START button
-    if (!game1Started) {
+    /* =============== START PAGE =============== */
+    if (game1Stage === "start") {
         background(255, 240, 200);
 
-        fill(255, 200, 200);
-        rect(width / 2, height / 2 + 20, 200, 60, 20);
+        fill(0);
+        textSize(32);
+        text("Plane Time!", width / 2, height / 2 - 120);
 
+        textSize(20);
+        text("Move mouse to control plane", width / 2, height / 2 - 40);
+        text("Click to shoot", width / 2, height / 2 - 10);
+        text("Yellow enemy = +3s", width / 2, height / 2 + 20);
+        text("Red enemy = deadly", width / 2, height / 2 + 50);
+
+        fill(255, 200, 200);
+        rect(width / 2, height / 2 + 140, 220, 80, 20);
         fill(0);
         textSize(28);
-        text("Start", width / 2, height / 2 + 20);
+        text("Start", width / 2, height / 2 + 140);
 
         drawBackButton();
         return;
     }
 
-    // ---------------- GAME PLAY ----------------
-    // -------- MOVING BACKGROUND --------
+    /* =============== END PAGE =============== */
+    if (game1Stage === "end") {
+        background(0);
 
-    // BACKGROUND 1
-    fill(170, 200, 255);
-    rect(450, bgY1 + 450, 900, 900);
+        fill("yellow");
+        textSize(50);
+        text("TIME'S UP!", width / 2, height / 2 - 120);
 
-    // BACKGROUND 2
-    fill(180, 210, 255);
-    rect(450, bgY2 + 450, 900, 900);
+        fill("white");
+        textSize(32);
+        text("Final Score: " + game1Score, width / 2, height / 2 - 30);
+        text("Best Score: " + game1BestScore, width / 2, height / 2 + 20);
 
-    // move them downward
-    bgY1 += 2;
-    bgY2 += 2;
+        textSize(24);
+        text("Click to Return", width / 2, height / 2 + 100);
 
-    // when one goes off screen, reset it above
-    if (bgY1 > 900) bgY1 = -900;
-    if (bgY2 > 900) bgY2 = -900;
+        drawBackButton();
+        return;
+    }
 
-
-    // -------- DRAW PLANE --------
-    fill(30, 60, 140);
-    triangle(
-        planeX - 25, planeY + 20,
-        planeX + 25, planeY + 20,
-        planeX, planeY - 30
-    );
-
-    // movement (mouse follow)
-    planeX = mouseX;
-    planeX = constrain(planeX, 50, 850);
-
-    drawBackButton();
 }
-
-
 function runGame2() {
     background(200, 255, 220);
     textSize(50);

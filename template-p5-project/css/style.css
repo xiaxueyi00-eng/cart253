@@ -24,3 +24,8 @@ html,
 body {
   background: white !important;
 }
+
+canvas {
+  width: 900px !important;
+  height: 900px !important;
+}
