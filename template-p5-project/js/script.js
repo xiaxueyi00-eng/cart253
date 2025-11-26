@@ -260,7 +260,9 @@ function mousePressed() {
             mouseY < height / 2 + 180
         ) {
             console.log("START CLICKED");
+            game1Started = true;
             game1Stage = "play";
+            resetGame1();
             resetGame1();
             game1StartTime = millis();
         }
@@ -307,55 +309,8 @@ function mousePressed() {
         stage = "rules";
         return;
     }
+
 }
-
-/* =============== PLAYING =============== */
-
-// scrolling background
-fill(170, 200, 255);
-rect(450, bgY1 + 450, 900, 900);
-
-fill(180, 210, 255);
-rect(450, bgY2 + 450, 900, 900);
-
-bgY1 += 5;
-bgY2 += 5;
-if (bgY1 > 900) bgY1 = -900;
-if (bgY2 > 900) bgY2 = -900;
-
-// plane follows mouse
-planeX = constrain(mouseX, 50, 850);
-drawPlane1();
-
-// spawn enemies
-if (frameCount % enemySpawnInterval === 0) {
-    spawnEnemy1();
-}
-
-// update bullets + enemies
-updateBullets1();
-updateEnemies1();
-
-// UI
-fill(0);
-textSize(30);
-textAlign(CENTER);
-text("Score: " + game1Score, width / 2, 55);
-
-let elapsed = millis() - game1StartTime;
-let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
-
-textSize(22);
-textAlign(LEFT, TOP);
-text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
-
-// time up
-if (remaining <= 0) {
-    if (game1Score > game1BestScore) game1BestScore = game1Score;
-    game1Stage = "end";
-}
-
-drawBackButton();
 
 function drawPlane1() {
     fill(30, 60, 140);
@@ -462,10 +417,12 @@ function resetGame1() {
 
 }
 /* ---------------- GAME 1 MAIN LOOP ---------------- */
+
 function runGame1() {
 
     /* =============== START PAGE =============== */
     if (game1Stage === "start") {
+
         background(255, 240, 200);
 
         fill(0);
@@ -478,8 +435,10 @@ function runGame1() {
         text("Yellow enemy = +3s", width / 2, height / 2 + 20);
         text("Red enemy = deadly", width / 2, height / 2 + 50);
 
+        // Start Button
         fill(255, 200, 200);
         rect(width / 2, height / 2 + 140, 220, 80, 20);
+
         fill(0);
         textSize(28);
         text("Start", width / 2, height / 2 + 140);
@@ -490,6 +449,7 @@ function runGame1() {
 
     /* =============== END PAGE =============== */
     if (game1Stage === "end") {
+
         background(0);
 
         fill("yellow");
@@ -508,7 +468,56 @@ function runGame1() {
         return;
     }
 
+    /* =============== PLAYING =============== */
+    if (game1Stage === "play") {
+        push();
+
+        // background scrolling
+        fill(170, 200, 255);
+        rect(450, bgY1 + 450, 900, 900);
+
+        fill(180, 210, 255);
+        rect(450, bgY2 + 450, 900, 900);
+
+        bgY1 += 5;
+        bgY2 += 5;
+
+        if (bgY1 > 900) bgY1 = -900;
+        if (bgY2 > 900) bgY2 = -900;
+
+        // plane follows mouse
+        planeX = constrain(mouseX, 50, 850);
+        drawPlane1();
+
+        // spawn enemies
+        if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
+
+        // update bullets & enemies
+        updateBullets1();
+        updateEnemies1();
+
+        // UI
+        fill(0);
+        textSize(30);
+        text("Score: " + game1Score, width / 2, 55);
+
+        let elapsed = millis() - game1StartTime;
+        let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
+
+        textSize(22);
+        textAlign(LEFT, TOP);
+        text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
+
+        // time up
+        if (remaining <= 0) {
+            if (game1Score > game1BestScore) game1BestScore = game1Score;
+            game1Stage = "end";
+        }
+        pop();
+        drawBackButton();
+    }
 }
+
 function runGame2() {
     background(200, 255, 220);
     textSize(50);
@@ -525,3 +534,11 @@ function runGame3() {
     drawBackButton();
 }
 
+function drawBackButton() {
+    fill(255, 150, 150);
+    rect(80, 60, 120, 50, 20);
+
+    fill(0);
+    textSize(22);
+    text("Back", 80, 60);
+}
