@@ -35,6 +35,14 @@ let enemyCount = 0;
 let enemySpawnInterval = 40;
 
 let speedLines = [];
+//======voice=====/
+let rainSound;
+let shootSound;
+
+function preload() {
+    rainSound = loadSound("assets/sounds/rain.wav");
+    shootSound = loadSound("assets/sounds/shoot.wav");
+}
 // =================== RAIN BACKGROUND ===================
 let a = 0;
 let b = 0;
@@ -57,27 +65,24 @@ function runRainBackground() {
         b = -200;
     }
 
+    // CLOUDS — super simple version
     noStroke();
-    fill(200);
+    fill(255);
 
-    // Cloud 1
-    ellipse(a, 100, 200, 80);
-    ellipse(a + 50, 80, 100, 80);
-    ellipse(a + 50, 120, 150, 50);
+    ellipse(a, 130, 90, 70);          // left
+    ellipse(a + 60, 120, 110, 80);    // middle (largest)
+    ellipse(a + 120, 135, 90, 70);    // right
 
-    // Cloud 2
-    ellipse(a + 300, 150, 170, 90);
-    ellipse(a + 350, 130, 90, 70);
-    ellipse(a + 400, 170, 100, 80);
+    // Cloud B — slightly different shape
+    ellipse(a + 260, 160, 80, 60);    // left
+    ellipse(a + 320, 150, 100, 75);   // middle (largest)
+    ellipse(a + 380, 165, 80, 60);    // right
 
-    noStroke();
-    fill(180);
+    // Cloud C — different spacing
+    ellipse(b + 110, 180, 85, 65);    // left
+    ellipse(b + 170, 170, 115, 85);   // middle (largest)
+    ellipse(b + 230, 190, 85, 65);    // right
 
-    // Cloud 3
-    ellipse(b + 130, 170, 150, 70);
-    ellipse(b + 120, 160, 150, 30);
-    ellipse(b + 150, 190, 100, 50);
-    ellipse(b + 150, 130, 80, 50);
 
     // Rain
     for (var i = 0; i < 800; i += 20) {
@@ -276,6 +281,7 @@ function keyPressed() {
                 active: true
             });
             lastBulletTime = millis();
+            shootSound.play();
         }
     }
 }
@@ -308,6 +314,11 @@ function mousePressed() {
             game1Stage = "play";
             resetGame1();
             game1StartTime = millis();
+            if (!rainSound.isPlaying()) {
+                rainSound.setLoop(true);
+                rainSound.setVolume(0.3);
+                rainSound.play();
+            }
         }
         return;
     }
@@ -536,14 +547,7 @@ function runGame1() {
         push();
 
         // background scroll
-        fill(190, 190, 190);
-        rect(450, bgY1 + 450, 900, 900);
-
-        fill(200, 200, 200);
-        rect(450, bgY2 + 450, 900, 900);
-
-        drawSpeedLines();
-
+        runRainBackground();
         bgY1 += 5;
         bgY2 += 5;
 
