@@ -1,5 +1,5 @@
 /**
- * Game Menu + Intro Animation
+ * Game Time
  * Author: xueyi
  */
 
@@ -37,6 +37,14 @@ let enemySpawnInterval = 40;
 let speedLines = [];
 
 let timedMonsters = [];
+
+
+// --- Game2 bonus counter (number of yellow enemies collected) ---
+let game2BonusEatCount = 0;
+
+// --- Game2 falling rain-type enemy (triggered after enough bonuses) ---
+let game2RainEnemy = null;
+
 
 // ====== SOUNDS ======
 let rainSound;
@@ -88,12 +96,12 @@ function runRainBackground() {
 
 
     // Rain
-    for (var i = 0; i < 800; i += 20) {
-        var y = random(-800, 800);
+    for (var i = 0; i < width; i += 20) {
+        var y = random(-height, height);
         stroke(255, 50);
         line(i, 0, i, y - 100);
 
-        var Y2 = random(500, 800);
+        var Y2 = random(height * 0.6, height);
         strokeWeight(2);
         stroke(0, 255, 255, 60);
         ellipse(i, Y2, 50, 5);
@@ -106,9 +114,9 @@ function runRainBackground() {
 
     beginShape();
     vertex(0, Y);
-    vertex(0, 800);
-    vertex(800, 800);
-    vertex(800, Y);
+    vertex(0, height);
+    vertex(width, height);
+    vertex(width, Y);
     endShape();
 }
 // ===== INTRO ANIMATION CLOUDS =====
@@ -121,7 +129,7 @@ let cloudLeft = [
 let cloudRight = [
     { x: 450, y: -50 },
     { x: 480, y: 80 },
-    { x: 40, y: 150 },
+    { x: 400, y: 200 },
     { x: 300, y: 60 },
 ];
 
@@ -498,12 +506,11 @@ function resetGame1() {
     enemyCount = 0;
 }
 
-/* =====================================================
-   GAME 1 MAIN LOOP
-===================================================== */
-
 function runGame1() {
-    // ===== START PAGE =====
+
+    /* ======================
+       START PAGE
+    ====================== */
     if (game1Stage === "start") {
         background(255, 240, 200);
 
@@ -519,6 +526,7 @@ function runGame1() {
 
         fill(255, 200, 200);
         rect(width / 2, height / 2 + 140, 220, 80, 20);
+
         fill(0);
         textSize(28);
         text("Start", width / 2, height / 2 + 140);
@@ -526,7 +534,9 @@ function runGame1() {
         return;
     }
 
-    // ===== END PAGE =====
+    /* ======================
+       END PAGE
+    ====================== */
     if (game1Stage === "end") {
         background(0);
 
@@ -545,98 +555,210 @@ function runGame1() {
         return;
     }
 
-    // ===== PLAY =====
+    /* ======================
+       PLAY SECTION
+    ====================== */
     if (game1Stage === "play") {
+
+
+        let elapsed = millis() - game1StartTime;
+        let t = floor(elapsed / 1000);
+        let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
+
         push();
 
 
-        // background scroll
         runRainBackground();
-        bgY1 += 5;
-        bgY2 += 5;
 
-        if (bgY1 >= 900) bgY1 = bgY2 - 900;
-        if (bgY2 >= 900) bgY2 = bgY1 - 900;
-        // plane
+
+        // ======== ONE MONSTER ========
+        let monster = {
+            x: width / 2,
+            y: -60,
+            size: 80,
+            speed: 3,
+            color: "#8800ff"
+        };
+
+        for (let m of timedMonsters) {
+            fill(m.color);
+            ellipse(m.x, m.y, m.size);
+            m.y += m.speed;
+        }
+
+
         planeX = constrain(mouseX, 50, 850);
         drawPlane1();
 
-        // glow
+
         noStroke();
         for (let i = 0; i < 3; i++) {
             fill(255, 200, 240, 120 - i * 40);
             ellipse(planeX, planeY, planeSize + 40 + i * 20);
         }
 
+
+        fill(monster.color);
+        ellipse(monster.x, monster.y, monster.size);
+        monster.y += monster.speed;
+
+
+        if (monster.y > height + 50) {
+            monster.y = -50;
+            monster.x = random(50, 850);
+        }
         if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
         updateBullets1();
         updateEnemies1();
-        // ===== TIME-BASED MONSTER TRIGGERS =====
-
-        if (t === 5) {
-            timedMonsters.push({
-                x: random(50, 850),
-                y: -40,
-                size: 60,
-                speed: 3,
-                color: "#8800ff",
-            });
-        }
-
-
-        if (t === 12) {
-            timedMonsters.push({
-                x: random(50, 850),
-                y: -40,
-                size: 70,
-                speed: 2.5,
-                color: "#00ccff",
-            });
-        }
-
-
-        if (t === 20) {
-            timedMonsters.push({
-                x: width / 2,
-                y: -80,
-                size: 120,
-                speed: 1.5,
-                color: "#ff6600",
-            });
-        }
-
-
 
         // UI
         fill(0);
         textSize(30);
         text("Score: " + game1Score, width / 2, 55);
 
-        let elapsed = millis() - game1StartTime;
-        let t = floor(elapsed / 1000);
-        let remaining = max(0, (baseTimeMs + bonusTimeMs - elapsed) / 1000);
-
         textSize(22);
-        textAlign(LEFT, TOP);
+        textAlign(CENTER);
         text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
+
 
         if (remaining <= 0) {
             if (game1Score > game1BestScore)
                 game1BestScore = game1Score;
+
             game1Stage = "end";
         }
+
         pop();
     }
 }
+/* ===== GAME 2 ========= */
+/* ---------------- ON HIT ---------------- */
+function handleHit2(e) {
+    e.absorbing = true;
+    game2Score++;
 
-/* =====================================================
-   GAME 2 & 3
-===================================================== */
+    if (e.type === "yellow") {
+        game2BonusTimeMs += 3000;
+        game2BonusEatCount++;
+    }
 
+    if (e.type === "red") {
+        game2Stage = "end";
+    }
+}
 function runGame2() {
-    background(200, 255, 220);
-    textSize(50);
-    text("Game 2 Start!", width / 2, height / 2);
+
+    // ======== START SCREEN ========
+    if (game2Stage === "start") {
+        background(200, 255, 220);
+
+        fill(0);
+        textSize(36);
+        text("Level 2: Hard Mode", width / 2, height / 2 - 120);
+
+        textSize(20);
+        text("Faster enemies", width / 2, height / 2 - 40);
+        text("More red enemies", width / 2, height / 2 - 10);
+        text("Rain enemy triggered at 8 bonuses", width / 2, height / 2 + 20);
+
+        fill(255, 150, 150);
+        rect(width / 2, height / 2 + 140, 220, 80, 20);
+        fill(0);
+        textSize(28);
+        text("Start", width / 2, height / 2 + 140);
+
+        return;
+    }
+
+    // ======== END SCREEN ========
+    if (game2Stage === "end") {
+        background(0);
+
+        fill("yellow");
+        textSize(50);
+        text("TIME'S UP!", width / 2, height / 2 - 120);
+
+        fill("white");
+        textSize(32);
+        text("Final Score: " + game2Score, width / 2, height / 2 - 30);
+        text("Best Score: " + game2BestScore, width / 2, height / 2 + 20);
+
+        textSize(24);
+        text("Click to Return", width / 2, height / 2 + 100);
+
+        return;
+    }
+
+    // ======== PLAY MODE ========
+    if (game2Stage === "play") {
+
+        // Background
+        runRainBackground();
+
+
+        if (game2BonusEatCount === 8 && game2RainEnemy === null) {
+            game2RainEnemy = {
+                x: random(50, 850),
+                y: -60,
+                w: 6,
+                h: 40,
+                speed: 12,
+                alpha: 255
+            };
+        }
+
+        if (game2RainEnemy !== null) {
+            noStroke();
+            fill(150, 255, 255, game2RainEnemy.alpha);
+            rect(
+                game2RainEnemy.x,
+                game2RainEnemy.y,
+                game2RainEnemy.w,
+                game2RainEnemy.h,
+                10
+            );
+
+            // fall down
+            game2RainEnemy.y += game2RainEnemy.speed;
+
+            // out of screen → remove
+            if (game2RainEnemy.y > height + 80) {
+                game2RainEnemy = null;
+            }
+        }
+
+        // ===== Player Plane =====
+        planeX = constrain(mouseX, 50, 850);
+        drawPlane1();
+
+        // ===== Bullets =====
+        updateBullets2();
+
+        // ===== Enemy Spawn =====
+        if (frameCount % game2EnemySpawnInterval === 0) spawnEnemy2();
+
+        // ===== Enemy Update =====
+        updateEnemies2();
+
+        // ===== Time UI =====
+        let elapsed = millis() - game2StartTime;
+        let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
+
+        fill(0);
+        textSize(30);
+        text("Score: " + game2Score, width / 2, 55);
+
+        textSize(22);
+        text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
+
+        // Time runs out → end game
+        if (remaining <= 0) {
+            if (game2Score > game2BestScore)
+                game2BestScore = game2Score;
+
+            game2Stage = "end";
+        }
+    }
 }
 
 function runGame3() {
