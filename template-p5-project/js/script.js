@@ -4,7 +4,7 @@
  */
 
 "use strict";
-
+let game2EnemyCount = 0;
 // ===== GLOBAL =====
 let stage = "intro";  // intro → sunAppear → rules → game1
 let planeX = 450;
@@ -24,6 +24,21 @@ let game1BestScore = 0;
 let game1StartTime = 0;
 let baseTimeMs = 40000;
 let bonusTimeMs = 0;
+/* ===== GAME 2 VARS ===== */
+let game2Stage = "start";
+let game2Score = 0;
+let game2BestScore = 0;
+
+let game2StartTime = 0;
+let game2BaseTimeMs = 40000;
+let game2BonusTimeMs = 0;
+
+let game2EnemySpawnInterval = 35;
+
+
+let stars2 = [];
+let starDensity2 = 170 / (900 * 900);
+
 
 // plane
 let planeSize = 40;
@@ -53,6 +68,19 @@ let shootSound;
 function preload() {
     rainSound = loadSound("assets/sounds/rain.wav");
     shootSound = loadSound("assets/sounds/shoot.wav");
+}
+
+
+
+function drawStarBackground2() {
+    background(0);
+
+    noStroke();
+    for (let s of stars2) {
+        s.brightness = random(100, 255);
+        fill(s.brightness);
+        ellipse(s.x, s.y, s.size);
+    }
 }
 // =================== RAIN BACKGROUND ===================
 let a = 0;
@@ -118,6 +146,27 @@ function runRainBackground() {
     vertex(width, height);
     vertex(width, Y);
     endShape();
+}
+
+// ⭐ Game2 
+class Star2 {
+    constructor() {
+        this.x = random(width);
+        this.y = random(height);
+        this.size = random(1, 4);
+        this.brightness = random(100, 255);
+    }
+
+    update() {
+
+        this.brightness = random(100, 255);
+    }
+
+    display() {
+        noStroke();
+        fill(this.brightness);
+        ellipse(this.x, this.y, this.size, this.size);
+    }
 }
 // ===== INTRO ANIMATION CLOUDS =====
 let cloudLeft = [
@@ -295,6 +344,21 @@ function keyPressed() {
             shootSound.play();
         }
     }
+    // ========== Game 2 ========== 
+    if (stage === "game2" && game2Stage === "play") {
+        if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
+            bullets.push({
+                x: planeX,
+                y: planeY - 20,
+                size: 10,
+                speed: 12,
+                active: true
+            });
+            lastBulletTime = millis();
+            shootSound.play();
+        }
+    }
+
 }
 
 function mousePressed() {
@@ -307,6 +371,10 @@ function mousePressed() {
                 if (b.label === "game1") {
                     game1Stage = "start";
                     resetGame1();
+                }
+                if (b.label === "game2") {
+                    game2Stage = "start";
+
                 }
                 return;
             }
@@ -340,8 +408,34 @@ function mousePressed() {
         stage = "rules";
         return;
     }
-}
 
+    // ------- GAME 2 : START -------
+    if (stage === "game2" && game2Stage === "start") {
+        if (
+            mouseX > width / 2 - 110 &&
+            mouseX < width / 2 + 110 &&
+            mouseY > height / 2 + 100 &&
+            mouseY < height / 2 + 180
+        ) {
+            game2Stage = "play";
+            game2StartTime = millis();
+            game2Score = 0;
+            game2BonusTimeMs = 0;
+            game2BonusEatCount = 0;
+            enemies = [];
+            bullets = [];
+            setupStars2();
+        }
+        return;
+    }
+
+    // ------- GAME 2 : END -------
+    if (stage === "game2" && game2Stage === "end") {
+        game2Stage = "start";
+        stage = "rules";
+        return;
+    }
+}
 /* ---------------- HIT DETECTION ---------------- */
 function insideButton(mx, my, bx, by) {
     return (
@@ -631,21 +725,7 @@ function runGame1() {
         pop();
     }
 }
-/* ===== GAME 2 ========= */
-/* ---------------- ON HIT ---------------- */
-function handleHit2(e) {
-    e.absorbing = true;
-    game2Score++;
-
-    if (e.type === "yellow") {
-        game2BonusTimeMs += 3000;
-        game2BonusEatCount++;
-    }
-
-    if (e.type === "red") {
-        game2Stage = "end";
-    }
-}
+//* GAME 2*//
 function runGame2() {
 
     // ======== START SCREEN ========
@@ -656,11 +736,6 @@ function runGame2() {
         textSize(36);
         text("Level 2: Hard Mode", width / 2, height / 2 - 120);
 
-        textSize(20);
-        text("Faster enemies", width / 2, height / 2 - 40);
-        text("More red enemies", width / 2, height / 2 - 10);
-        text("Rain enemy triggered at 8 bonuses", width / 2, height / 2 + 20);
-
         fill(255, 150, 150);
         rect(width / 2, height / 2 + 140, 220, 80, 20);
         fill(0);
@@ -669,7 +744,6 @@ function runGame2() {
 
         return;
     }
-
     // ======== END SCREEN ========
     if (game2Stage === "end") {
         background(0);
@@ -688,14 +762,18 @@ function runGame2() {
 
         return;
     }
-
+    // ------- GAME 2 : END -------
+    if (stage === "game2" && game2Stage === "end") {
+        game2Stage = "start";
+        stage = "rules";
+        return;
+    }
     // ======== PLAY MODE ========
     if (game2Stage === "play") {
 
-        // Background
-        runRainBackground();
+        drawStars2();
 
-
+        // ====== RAIN ENEMY TRIGGER ======
         if (game2BonusEatCount === 8 && game2RainEnemy === null) {
             game2RainEnemy = {
                 x: random(50, 850),
@@ -710,57 +788,193 @@ function runGame2() {
         if (game2RainEnemy !== null) {
             noStroke();
             fill(150, 255, 255, game2RainEnemy.alpha);
-            rect(
-                game2RainEnemy.x,
-                game2RainEnemy.y,
-                game2RainEnemy.w,
-                game2RainEnemy.h,
-                10
-            );
-
-            // fall down
+            rect(game2RainEnemy.x, game2RainEnemy.y, game2RainEnemy.w, game2RainEnemy.h, 10);
             game2RainEnemy.y += game2RainEnemy.speed;
 
-            // out of screen → remove
             if (game2RainEnemy.y > height + 80) {
                 game2RainEnemy = null;
             }
         }
 
-        // ===== Player Plane =====
+        // Plane
         planeX = constrain(mouseX, 50, 850);
         drawPlane1();
 
-        // ===== Bullets =====
+        // Bullets
         updateBullets2();
 
-        // ===== Enemy Spawn =====
+        // Enemies
         if (frameCount % game2EnemySpawnInterval === 0) spawnEnemy2();
-
-        // ===== Enemy Update =====
         updateEnemies2();
 
-        // ===== Time UI =====
+        // Time UI
         let elapsed = millis() - game2StartTime;
         let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
 
         fill(0);
         textSize(30);
         text("Score: " + game2Score, width / 2, 55);
-
         textSize(22);
         text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
 
-        // Time runs out → end game
         if (remaining <= 0) {
-            if (game2Score > game2BestScore)
-                game2BestScore = game2Score;
-
+            if (game2Score > game2BestScore) game2BestScore = game2Score;
             game2Stage = "end";
         }
     }
 }
+function updateBullets2() {
+    for (let b of bullets) {
+        if (!b.active) continue;
 
+        b.y -= b.speed;
+        fill("#ff0000");
+        ellipse(b.x, b.y, b.size);
+
+        if (b.y < 0) b.active = false;
+
+        for (let e of enemies) {
+            if (!e.alive || e.absorbing) continue;
+
+            let d = dist(b.x, b.y, e.x, e.y);
+            if (d < e.size / 2 + b.size / 2) {
+                b.active = false;
+                handleHit2(e);
+            }
+        }
+    }
+}
+function updateEnemies2() {
+    for (let e of enemies) {
+        if (!e.alive) continue;
+
+        // ⛔ Red enemy hits the player → Game Over
+        let d = dist(e.x, e.y, planeX, planeY);
+        if (e.type === "red" && d < e.size / 2 + planeSize / 2) {
+            game2Stage = "end";
+            return;
+        }
+
+        // Absorbing state (same logic as Game1)
+        if (e.absorbing) {
+            e.x = lerp(e.x, planeX, 0.2);
+            e.y = lerp(e.y, planeY, 0.2);
+            if (dist(e.x, e.y, planeX, planeY) < 10) {
+                e.alive = false;
+            }
+            continue;
+        }
+
+        //  NORMAL enemy — uses full “bouncing ball” movement
+        if (e.type === "normal") {
+            e.x += e.xspeed;
+            e.y += e.yspeed;
+
+            // Bounce horizontally
+            if (e.x > width - e.size / 2 || e.x < e.size / 2) {
+                e.xspeed = -e.xspeed;
+            }
+            // Bounce vertically
+            if (e.y > height - e.size / 2 || e.y < e.size / 2) {
+                e.yspeed = -e.yspeed;
+            }
+        }
+
+        //  Red enemy — tracking behavior
+        if (e.type === "red") {
+            e.y += e.speed;
+            e.x = lerp(e.x, planeX, 0.03);
+        }
+
+        // Yellow enemy — simple falling behavior
+        if (e.type === "yellow") {
+            e.y += e.speed;
+        }
+
+        fill(e.color);
+        ellipse(e.x, e.y, e.size);
+
+        // Remove falling-type enemies when they leave screen
+        if (e.y > height + 40 && e.type !== "normal") {
+            e.alive = false;
+        }
+    }
+}
+function spawnEnemy2() {
+
+    game2EnemyCount++;
+
+    let difficulty = min(0.8, game2EnemyCount * 0.02);
+    let r = random();
+
+    let type = "normal";
+    let color = "#ffffff";   // ⭐ normal enemies are visible white
+
+    // Yellow bonus enemy
+    if (game2EnemyCount % 6 === 0) {
+        type = "yellow";
+        color = "#ffe600";
+    }
+
+    // Red dangerous enemy
+    if (r < difficulty) {
+        type = "red";
+        color = "#ff0033";
+    }
+
+    // ⭐ Spawn enemy (safe area, always visible)
+    let enemy = {
+        x: random(50, 850),
+        y: random(50, 300),
+        size: 40,
+        xspeed: random(-4, 4),
+        yspeed: random(-4, 4),
+        speed: random(3, 6),
+        alive: true,
+        absorbing: false,
+        type,
+        color
+    };
+
+    // ⭐ Prevent zero-speed bouncing
+    if (abs(enemy.xspeed) < 1) enemy.xspeed = 2;
+    if (abs(enemy.yspeed) < 1) enemy.yspeed = -2;
+
+    enemies.push(enemy);
+}
+
+function setupStars2() {
+    stars2 = [];
+    let numStars = floor(starDensity2 * (width * height));
+
+    for (let i = 0; i < numStars; i++) {
+        stars2.push(new Star2());
+    }
+}
+
+
+function drawStars2() {
+    background(0);
+    for (let s of stars2) {
+        s.update();
+        s.display();
+    }
+}
+function handleHit2(e) {
+    e.absorbing = true;
+    game2Score++;
+
+
+    if (e.type === "yellow") {
+        game2BonusTimeMs += 3000;
+        game2BonusEatCount++;
+    }
+
+
+    if (e.type === "red") {
+        game2Stage = "end";
+    }
+}
 function runGame3() {
     background(220, 200, 255);
     textSize(50);

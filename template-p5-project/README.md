@@ -26,10 +26,16 @@ This bit should attribute any code, assets or other elements used taken from oth
 
 > - This project uses [p5.js](https://p5js.org).
 > - The clown image is a capture of the clown from the Apple emoji character set.
-> - The barking sound effect is "single dog bark 1" by crazymonke9 from freesound.org: https://freesound.org/people/crazymonke9/sounds/418107/
+> - The barking sound effect is "single dog bark 1" by crazymonke9 from freesound.org: 
 game 1
 https://editor.p5js.org/car1a/sketches/JFTZ8Tzhk
 https://editor.p5js.org/412065342/sketches/r1zDoHS3W
+https://mixkit.co/free-sound-effects/rain/ Thunderstorm and rain loop
+Falling hithttps://mixkit.co/free-sound-effects/space-shooter/
+
+gmae2 https://editor.p5js.org/yy5272/sketches/TpsliXOYw
+
+
 
 
 ## License
