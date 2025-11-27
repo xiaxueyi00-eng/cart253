@@ -362,6 +362,21 @@ function keyPressed() {
 }
 
 function mousePressed() {
+
+    // ==== Back Button ===//
+
+    if (mouseX > 20 && mouseX < 140 && mouseY > 35 && mouseY < 85) {
+        if (stage === "game1End") {
+            stage = "rules";
+            return;
+        }
+
+        if (stage === "game2End") {
+            stage = "rules";
+            return;
+        }
+    }
+
     // ------- RULES PAGE -------
     if (stage === "rules") {
         let buttons = getCircularButtons(450, 450, 300);
@@ -399,6 +414,8 @@ function mousePressed() {
                 rainSound.play();
             }
         }
+        if (stage === "game2End") stage = "rules";
+        if (stage === "game3End") stage = "rules";
         return;
     }
 
@@ -645,7 +662,7 @@ function runGame1() {
 
         textSize(24);
         text("Click to Return", width / 2, height / 2 + 100);
-
+        drawBackButton();
         return;
     }
 
@@ -724,6 +741,7 @@ function runGame1() {
 
         pop();
     }
+
 }
 //* GAME 2*//
 function runGame2() {
@@ -759,7 +777,7 @@ function runGame2() {
 
         textSize(24);
         text("Click to Return", width / 2, height / 2 + 100);
-
+        drawBackButton();
         return;
     }
     // ------- GAME 2 : END -------
@@ -979,4 +997,21 @@ function runGame3() {
     background(220, 200, 255);
     textSize(50);
     text("Game 3 Start!", width / 2, height / 2);
+}
+
+
+
+
+//* Button *//
+function drawBackButton() {
+    fill(225);
+    stroke(0);
+    strokeWeight(2);
+    rect(80, 60, 120, 50, 12);
+
+    fill(0);
+    noStroke();
+    textSize(24);
+    textAlign(CENTER, CENTER);
+    text("Back", 80, 60);
 }
