@@ -4,12 +4,13 @@
  */
 
 "use strict";
-let planeSpeed = 1;
-let flameImg;
 
-function preload() {
-    flameImg = loadImage("assets/images.jpeg");
-}
+// ===== METEOR SYSTEM FOR GAME 2 =====
+let meteors = [];
+let meteorNum = 8;
+let planeSpeed = 1;
+
+
 let planeBoost = false;
 let bossBullets = [];
 let cloudLayers = [];
@@ -41,13 +42,20 @@ let lastBulletTime = 0;
 let bulletCooldown = 500; // ms
 
 // ===== GAME1 VARS =====
+let game1Timer = 60;
+let game1StartTime = 0;
+let elapsed = 0;
+let remaining = game1Timer
 let game1Stage = "start";  // start → play → end
 let game1Score = 0;
 let game1BestScore = 0;
-
-let game1StartTime = 0;
-let baseTimeMs = 40000;
+let baseTimeMs = 60000;
 let bonusTimeMs = 0;
+
+let timeOver = false;
+let gameOver = false;
+
+
 /* ===== GAME 2 VARS ===== */
 let game2Stage = "start";
 let game2Score = 0;
@@ -86,21 +94,46 @@ let game2RainEnemy = null;
 
 
 // ====== SOUNDS ======
+let flameImg;
 let rainSound;
 let shootSound;
-// ====== PRELOAD ======
+
 function preload() {
-    rainSound = loadSound("assets/sounds/rain.wav");
-    shootSound = loadSound("assets/sounds/shoot.wav");
+    flameImg = loadImage("assets/images/image.png");
+
+    rainSound = loadSound(
+        "assets/sounds/rain.wav",
+        () => console.log("rainSound loaded successfully"),
+        (err) => console.error("rainSound failed to load", err)
+    );
+
+    shootSound = loadSound(
+        "assets/sounds/shoot.wav",
+        () => console.log("shootSound loaded successfully"),
+        (err) => console.error("shootSound failed to load", err)
+    );
 }
+// ====== SETUP ======
 function setup() {
     createCanvas(900, 900);
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
 
+    for (let i = 0; i < meteorNum; i++) {
+        meteors.push(new Meteor());
+    }
+
+
     initPrettyStormClouds();
     setupStars2();
     initSimplePinkClouds();
+
+    if (rainSound.isLoaded()) {
+        rainSound.loop();
+    } else {
+        console.log("rainSound not loaded yet");
+    }
+
 }
 function drawStarBackground2() {
     background(0);
@@ -245,6 +278,58 @@ function draw() {
     else if (stage === "game1") runGame1();
     else if (stage === "game2") runGame2();
     else if (stage === "game3") runGame3();
+
+    if (game1Stage === "end") {
+        background(0);
+        textAlign(CENTER, CENTER);
+
+        textSize(55);
+        if (gameOver) {
+            fill("red");
+            text("YOU LOSE!", width / 2, height / 2 - 120);
+        } else if (timeOver) {
+            fill("yellow");
+            text("TIME'S UP!", width / 2, height / 2 - 120);
+        }
+
+        fill("white");
+        textSize(40);
+        text("Try Again", width / 2, height / 2 - 50);
+
+        fill("white");
+        textSize(32);
+        text("Final Score: " + game1Score, width / 2, height / 2 + 20);
+        text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
+
+        textSize(24);
+        text("Click to Return", width / 2, height / 2 + 150);
+    }
+
+    if (stage === "game2" && game2Stage === "end") {
+        background(0);
+        textAlign(CENTER, CENTER);
+
+        textSize(55);
+        if (game2Over) {
+            fill("red");
+            text("YOU LOSE!", width / 2, height / 2 - 120);
+        } else if (game2TimeOver) {
+            fill("yellow");
+            text("TIME'S UP!", width / 2, height / 2 - 120);
+        }
+
+        fill("white");
+        textSize(40);
+        text("Try Again", width / 2, height / 2 - 50);
+
+        fill("white");
+        textSize(32);
+        text("Final Score: " + game2Score, width / 2, height / 2 + 20);
+        text("Best Score: " + game2BestScore, width / 2, height / 2 + 70);
+
+        textSize(24);
+        text("Click to Return", width / 2, height / 2 + 150);
+    }
 }
 
 /* ---------------- CLOUD GRADIENT CIRCLE ---------------- */
@@ -315,6 +400,7 @@ function runRulesScreen() {
 
     fill(0);
     textSize(36);
+    textAlign(CENTER, CENTER);
     text("Game Time", cx, cy - 200);
 
     drawCircularButtons(cx, cy, 300);
@@ -404,15 +490,15 @@ function keyPressed() {
 }
 
 function mousePressed() {
-
-    // ==== Back Button ===//
-
+    // ==== Back Button ====
     if (mouseX > 20 && mouseX < 140 && mouseY > 35 && mouseY < 85) {
-        if (stage === "game1End") {
+        if (stage === "game1" && game1Stage === "end") {
+            game1Stage = "start";
             stage = "rules";
+            // Stop background vosic
+            if (rainSound.isPlaying()) rainSound.stop();
             return;
         }
-
         if (stage === "game2End") {
             stage = "rules";
             return;
@@ -431,7 +517,6 @@ function mousePressed() {
                 }
                 if (b.label === "game2") {
                     game2Stage = "start";
-
                 }
                 return;
             }
@@ -456,15 +541,36 @@ function mousePressed() {
                 rainSound.play();
             }
         }
-        if (stage === "game2End") stage = "rules";
-        if (stage === "game3End") stage = "rules";
         return;
     }
 
     // ------- GAME 1 : END -------
     if (stage === "game1" && game1Stage === "end") {
-        game1Stage = "start";
-        stage = "rules";
+        // click Try Again
+        if (
+            mouseX > width / 2 - 100 &&
+            mouseX < width / 2 + 100 &&
+            mouseY > height / 2 - 70 &&
+            mouseY < height / 2 - 30
+        ) {
+            game1Stage = "start";
+            resetGame1();
+
+            if (rainSound.isPlaying()) rainSound.stop();
+            return;
+        }
+
+        if (
+            mouseX > width / 2 - 120 &&
+            mouseX < width / 2 + 120 &&
+            mouseY > height / 2 + 130 &&
+            mouseY < height / 2 + 170
+        ) {
+            game1Stage = "start";
+            stage = "rules";
+            if (rainSound.isPlaying()) rainSound.stop();
+            return;
+        }
         return;
     }
 
@@ -490,9 +596,37 @@ function mousePressed() {
 
     // ------- GAME 2 : END -------
     if (stage === "game2" && game2Stage === "end") {
-        game2Stage = "start";
-        stage = "rules";
-        return;
+
+
+        if (
+            mouseX > width / 2 - 100 &&
+            mouseX < width / 2 + 100 &&
+            mouseY > height / 2 - 70 &&
+            mouseY < height / 2 - 30
+        ) {
+            game2Stage = "start";
+            game2Score = 0;
+            game2BonusTimeMs = 0;
+            game2BonusEatCount = 0;
+            enemies = [];
+            bullets = [];
+            setupStars2();
+            if (rainSound.isPlaying()) rainSound.stop();
+            return;
+        }
+
+
+        if (
+            mouseX > width / 2 - 120 &&
+            mouseX < width / 2 + 120 &&
+            mouseY > height / 2 + 130 &&
+            mouseY < height / 2 + 170
+        ) {
+            game2Stage = "start";
+            stage = "rules";
+            if (rainSound.isPlaying()) rainSound.stop();
+            return;
+        }
     }
 }
 /* ---------------- HIT DETECTION ---------------- */
@@ -511,19 +645,25 @@ function insideButton(mx, my, bx, by) {
 
 function drawPlane1() {
 
-    // ---------------- FIRE EFFECT ----------------
-    if (game1KillCount >= 8) {
-        planeSpeed = 1.5;
 
-        imageMode(CENTER);
-        image(flameImg, planeX, planeY + 40, 50, 70);
-    }
+    imageMode(CENTER);
+    image(flameImg, planeX, planeY + 80, 80, 70);
+    fill(30, 60, 140);
+    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);
 
     // ---------------- PLANE ----------------
     fill(30, 60, 140);
     triangle(
-        planeX - planeSize / 2, planeY + 20,
-        planeX + planeSize / 2, planeY + 20,
+        planeX - planeSize, planeY + 25,
+        planeX + planeSize, planeY + 25,
+        planeX, planeY - 30
+    );
+
+    // ---------------- PLANE ----------------
+    fill(30, 60, 140);
+    triangle(
+        planeX - planeSize / 2, planeY + 35,
+        planeX + planeSize / 2, planeY + 35,
         planeX, planeY - 30
     );
 }
@@ -711,29 +851,46 @@ function resetGame1() {
     enemies = [];
     enemyCount = 0;
     game1KillCount = 0;
+    timeOver = false;
+    gameOver = false;
 }
 
 function runGame1() {
 
-    // LEVEL CLEAR
+    // ---- LEVEL CLEAR ----
     if (game1KillCount >= 18) {
         level1Cleared = true;
         stage = "game2";
         game2Stage = "start";
-
         enemies = [];
         bullets = [];
         return;
     }
 
+    // ---- TIME CALCULATION ----
+    let elapsed = millis() - game1StartTime;
+    let remaining = max(0, (game1Timer * 1000 - elapsed) / 1000);
+
+    if (remaining <= 0 && !gameOver) {
+
+        timeOver = true;
+        gameOver = false;
+        game1Stage = "end";
+    }
+
+    // ---- PLAYER LOSE ----
+    if (playerHit) {
+        gameOver = true;
+        timeOver = false;
+        game1Stage = "end";
+    }
+
     /* ============= START PAGE ============= */
     if (game1Stage === "start") {
         background(255, 240, 200);
-
         fill(0);
         textSize(32);
         text("Plane Time!", width / 2, height / 2 - 120);
-
         textSize(20);
         text("Move mouse to control plane", width / 2, height / 2 - 40);
         text("Press SPACE to shoot", width / 2, height / 2 - 10);
@@ -742,42 +899,53 @@ function runGame1() {
 
         fill(255, 200, 200);
         rect(width / 2, height / 2 + 140, 220, 80, 20);
-
         fill(0);
         textSize(28);
         text("Start", width / 2, height / 2 + 140);
-
         return;
     }
 
     /* ============= END PAGE ============= */
     if (game1Stage === "end") {
         background(0);
+        textAlign(CENTER, CENTER);
 
-        fill("yellow");
-        textSize(50);
-        text("TIME'S UP!", width / 2, height / 2 - 120);
+        textSize(55);
+
+        if (gameOver) {
+            fill("red");
+            text("YOU LOSE!", width / 2, height / 2 - 120);
+
+            fill("white");
+            textSize(40);
+            text("Try Again", width / 2, height / 2 - 50);
+        } else if (timeOver) {
+            fill("yellow");
+            text("TIME'S UP!", width / 2, height / 2 - 120);
+
+            fill("white");
+            textSize(40);
+            text("Try Again", width / 2, height / 2 - 50);
+        }
 
         fill("white");
         textSize(32);
-        text("Final Score: " + game1Score, width / 2, height / 2 - 30);
-        text("Best Score: " + game1BestScore, width / 2, height / 2 + 20);
+        text("Final Score: " + game1Score, width / 2, height / 2 + 20);
+        text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
 
         textSize(24);
-        text("Click to Return", width / 2, height / 2 + 100);
-        drawBackButton();
-        return;
+        text("Click to Return", width / 2, height / 2 + 150);
     }
 
     /* ============= PLAYING ============= */
+
     if (game1Stage === "play") {
 
-        // Background layers
         drawGradientBackground();
         runRainBackground();
         drawSimplePinkClouds();
 
-        // Plane
+
         if (planeBoost) {
             planeX = lerp(planeX, mouseX, 0.25);
         } else {
@@ -785,40 +953,33 @@ function runGame1() {
         }
         drawPlane1();
 
-        // ------BOSS DRAW 
-
+        // Boss
         fill(monster.color);
         ellipse(monster.x, monster.y, monster.size);
-
-        // Boss falling
         monster.y += monster.speed;
-
-        // Respawn top if falls off
         if (monster.y > height + 50) {
             monster.y = -50;
             monster.x = random(50, 850);
         }
-
-        // Boss bullets 
         shootBossBullet();
 
 
-        if (frameCount % enemySpawnInterval === 0) {
-            spawnEnemy1();
-        }
-
+        if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
         updateBullets1();
         updateEnemies1();
 
-
-        // UI 
-
+        // UI
         fill(255);
         textSize(22);
         textAlign(LEFT, TOP);
-        text("Kills: " + game1KillCount + " / 18", 20, 20);
+        text("Kills: " + game1KillCount + " / 18", 20, 50);
 
-        if (game1KillCount >= 7) {
+        textAlign(RIGHT, TOP);
+        fill(255, 255, 0);
+        text("Time: " + remaining.toFixed(1) + "s", width - 20, 50);
+
+
+        if (game1KillCount >= 7 && game1KillCount < 18) {
             push();
             noStroke();
             fill(255, 255, 0, 80);
@@ -826,19 +987,20 @@ function runGame1() {
             pop();
 
             textSize(24);
-            fill(0, 0, 0);
+            fill(0);
+            textAlign(CENTER, TOP);
             text("Almost there!", width / 2, 90);
         }
+
 
         if (game1KillCount >= 18) {
             textSize(32);
             fill(255, 255, 0);
+            textAlign(CENTER, CENTER);
             text("Level Clear!", width / 2, height / 2 - 100);
         }
-
     }
 }
-
 
 let simpleClouds = [];
 function initSimplePinkClouds() {
@@ -853,17 +1015,17 @@ function initSimplePinkClouds() {
         });
     }
 }
+
 function drawGradientBackground() {
     let ctx = drawingContext;
 
-    let g = ctx.createLinearGradient(0, 0, 0, height);
+    let g = ctx.createLinearGradient(0, 0, 0, canvas.height);
     g.addColorStop(0, "rgba(255, 180, 240, 1)");
     g.addColorStop(1, "rgba(180, 220, 255, 1)");
 
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
-
 function drawSimplePinkClouds() {
     noStroke();
 
@@ -899,16 +1061,35 @@ function drawSimplePinkClouds() {
 }
 //* GAME 2*//
 function runGame2() {
-    if (game2KillCount >= 15) {
-        level2Cleared = true;
+
+
+    // ---- LEVEL CLEAR ----
+    if (game2KillCount >= 20) {
         stage = "game3";
         game3Stage = "start";
-
         enemies = [];
         bullets = [];
-
         return;
     }
+
+    // ---- TIME CALCULATION ----
+    let elapsed = millis() - game2StartTime;
+    let remaining = max(0, (game2Timer * 1000 - elapsed) / 1000);
+
+    if (remaining <= 0 && !game2Over) {
+
+        game2TimeOver = true;
+        game2Over = false;
+        game2Stage = "end";
+    }
+
+    // ---- PLAYER LOSE ----
+    if (playerHit2) {
+        game2Over = true;
+        game2TimeOver = false;
+        game2Stage = "end";
+    }
+
     // ======== START SCREEN ========
     if (game2Stage === "start") {
         drawGradientBackground();
@@ -940,7 +1121,6 @@ function runGame2() {
 
         textSize(24);
         text("Click to Return", width / 2, height / 2 + 100);
-        drawBackButton();
         return;
     }
     // ------- GAME 2 : END -------
@@ -1006,6 +1186,22 @@ function runGame2() {
         if (remaining <= 0) {
             if (game2Score > game2BestScore) game2BestScore = game2Score;
             game2Stage = "end";
+        }
+    }
+    // ===== METEORS (will kill player) =====
+    for (let m of meteors) {
+        m.show();
+        m.move();
+
+        // If hit player → game over
+        let d = dist(m.x, m.y, planeX, planeY);
+        if (d < 40) {
+            game2Stage = "end";
+        }
+
+        // Reset meteor if out of screen
+        if (m.y > height + 120) {
+            m.reset();
         }
     }
 }
@@ -1175,6 +1371,57 @@ function drawSparkles() {
     ellipse(sparkle.x, sparkle.y, sparkle.size, sparkle.size);
     ellipse(mouseX, mouseY, random(2, 6));
 }
+
+class Meteor {
+    constructor() {
+        this.x = random(width);
+        this.y = random(-200, -50);
+        this.speed = random(4, 7);
+        this.w = random(18, 28);
+
+        this.origX = this.x;
+        this.origY = this.y;
+
+        this.tailAlpha = 100;
+
+        this.r = random(150, 255);
+        this.g = random(150, 255);
+        this.b = random(150, 255);
+    }
+
+    show() {
+        // head
+        fill(250, 120);
+        ellipse(this.x, this.y, this.w, this.w);
+
+        // small glow
+        fill(250, 80);
+        ellipse(this.x, this.y, this.w / 2, this.w / 2);
+
+        // tail
+        this.tailAlpha = map(this.y, 0, height, 100, 10);
+        fill(this.r, this.g, this.b, this.tailAlpha);
+        beginShape();
+        vertex(this.x - this.w / 3, this.y - this.w / 3);
+        vertex(this.x + this.w / 3, this.y + this.w / 3);
+        vertex(this.origX + this.w / 3, this.origY + this.w / 3);
+        vertex(this.origX - this.w / 3, this.origY - this.w / 3);
+        endShape(CLOSE);
+    }
+
+    move() {
+        this.x -= this.speed * 0.3;
+        this.y += this.speed;
+    }
+
+    reset() {
+        this.x = random(width);
+        this.y = random(-200, -50);
+        this.origX = this.x;
+        this.origY = this.y;
+        this.speed = random(4, 7);
+    }
+}
 function runGame3() {
     background(220, 200, 255);
     textSize(50);
@@ -1184,16 +1431,3 @@ function runGame3() {
 
 
 
-//* Button *//
-function drawBackButton() {
-    fill(225);
-    stroke(0);
-    strokeWeight(2);
-    rect(80, 60, 120, 50, 12);
-
-    fill(0);
-    noStroke();
-    textSize(24);
-    textAlign(CENTER, CENTER);
-    text("Back", 80, 60);
-}
