@@ -7,7 +7,7 @@
 
 let score1 = 0;
 let flameImg;
-let game2Lives = 2;
+let game2Lives = 3;
 let meteors = [];
 let stars2 = [];
 let meteorNum = 4;
@@ -525,50 +525,38 @@ function keyPressed() {
             }
         }
     }
+    if (stage === "game3" && game3Stage === "play") {
+        if (key === ' ' && millis() - lastBulletTime3 > 200) {
+            shootBulletGame3();
+            lastBulletTime3 = millis();
+            if (shootSound) shootSound.play();
+        }
+    }
+    if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
+        shootBulletGame1();
+        lastBulletTime = millis();
+        if (shootSound) shootSound.play();
+    }
+    if (stage === "game3" && game3Stage === "play") {
+        if (key === ' ' && millis() - lastBulletTime3 > 200) {
+            shootBulletGame3();
+            lastBulletTime3 = millis();
+            if (shootSound) shootSound.play();
+        }
+    }
 }
 
 
 
 function mousePressed() {
-    // GAME1 START
-    if (game1Stage === "start") {
-        game1Stage = "play";
-        game1StartTime = millis();
-    }
-    if (stage === "game1" && game1Stage === "end") {
-        stage = "rules";
-        game1Stage = "start";
-        if (rainSound.isPlaying()) rainSound.stop();
-        return;
-    }
 
-    if (stage === "game2" && game2Stage === "start") {
-        if (mouseX > width / 2 - 80 && mouseX < width / 2 + 80 &&
-            mouseY > height / 2 + 35 && mouseY < height / 2 + 85) {
-            game2Stage = "play";
-            game2StartTime = millis();
-            setupGame2();
-        }
-    }
-    // GAME2 SHOOT
-    if (stage === "game2" && !game2Over) {
-
-    }
-
-    // GAME2 END
-    if (stage === "game2" && game2Stage === "end") {
-        resetGame2();
-        stage = "rules";
-        loop();
-        return;
-    }
-
-    // RULES PAGE
+    // ===== RULES PAGE（）=====
     if (stage === "rules") {
         let buttons = getCircularButtons(450, 450, 300);
         for (let b of buttons) {
             if (insideButton(mouseX, mouseY, b.x, b.y)) {
                 stage = b.label;
+
                 if (b.label === "game1") {
                     game1Stage = "start";
                     resetGame1();
@@ -577,38 +565,61 @@ function mousePressed() {
                     game2Stage = "start";
                     setupGame2();
                 }
+                if (b.label === "game3") {
+                    game3Stage = "start";
+                    initGame3();     // ★ 正确启动 Game3
+                }
                 return;
             }
         }
     }
 
-    // GAME1 / GAME2 START
+    // ===================== GAME 1 =====================
     if (stage === "game1" && game1Stage === "start") {
-        if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 &&
-            mouseY > height / 2 + 100 && mouseY < height / 2 + 180) {
-            game1Stage = "play";
-            game1StartTime = millis();
-            resetGame1();
-            if (!rainSound.isPlaying()) {
-                rainSound.setLoop(true);
-                rainSound.setVolume(0.3);
-                rainSound.play();
-            }
-            return;
-        }
+        game1Stage = "play";
+        game1StartTime = millis();
+        resetGame1();
+        return;
     }
 
+    if (stage === "game1" && game1Stage === "end") {
+        stage = "rules";
+        game1Stage = "start";
+        return;
+    }
+
+    // ===================== GAME 2 =====================
     if (stage === "game2" && game2Stage === "start") {
-        if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 &&
-            mouseY > height / 2 + 100 && mouseY < height / 2 + 180) {
-            game2Stage = "play";
-            game2StartTime = millis();
-            setupGame2();
-            return;
-        }
+        game2Stage = "play";
+        game2StartTime = millis();
+        setupGame2();
+        return;
+    }
+
+    if (stage === "game2" && game2Stage === "end") {
+        resetGame2();
+        stage = "rules";
+        return;
+    }
+
+    // ===================== GAME 3 =====================
+    // START → PLAY
+    if (stage === "game3" && game3Stage === "start") {
+        game3Stage = "play";
+        game3StartTime = millis();
+        return;
+    }
+
+    // WIN / LOSE →
+    if (stage === "game3" && (game3Stage === "win" || game3Stage === "lose")) {
+        initGame3();
+        game3Stage = "start";
+        stage = "rules";
+        return;
     }
 }
-/* ---------------- HIT DETECTION ---------------- */
+
+// ---------------- HIT DETECTION ---------------- */
 function insideButton(mx, my, bx, by) {
     return (
         mx > bx - 130 &&
@@ -986,36 +997,10 @@ function initSimplePinkClouds() {
         });
     }
 }
-/* ---------------- GAME1 子弹 & 敌人逻辑 ---------------- */
-
-
-
 
 
 
 //Game Two
-
-// ===== BULLET CLASS =====
-class Bullet {
-    constructor(x, y, speed = 10, size = 10) {
-        this.x = x;
-        this.y = y;
-        this.speed = speed;
-        this.size = size;
-        this.toDelete = false;
-    }
-
-    move() {
-        this.y -= this.speed;
-        if (this.y < 0) this.toDelete = true;
-    }
-
-    show() {
-        fill(255, 0, 0);
-        noStroke();
-        ellipse(this.x, this.y, this.size, this.size);
-    }
-}
 
 
 
@@ -1068,14 +1053,6 @@ function updateBullets() {
 }
 
 
-
-
-
-
-
-
-
-
 function setupGame2() {
     let stars = [];
     let game2Score = 0;
@@ -1100,7 +1077,7 @@ function setupGame2() {
     game2EnemyCount = 0;
     game2BonusTimeMs = 0;
     game2LastBulletTime = 0;
-    game2Lives = 2;
+    game2Lives = 3;
     game2Over = false;
 
     planeImmune = false;
@@ -1232,6 +1209,50 @@ function runGame2() {
         drawEndScreen();
     }
 }
+
+function Meteor() {
+    this.x = random(width);
+    this.y = random(-3, -10);
+    this.speed = random(2, 4);
+    this.w = random(10, 15);
+    this.r = random(152, 255);
+    this.g = random(152, 255);
+    this.b = random(152, 255);
+    this.origX = this.x;
+    this.origY = this.y;
+    this.tailAlpha = 100;
+
+    this.show = function () {
+        fill(250, 70);
+        ellipse(this.x, this.y, this.w, this.w);
+        ellipse(this.x, this.y, this.w / 3, this.w / 3);
+
+        fill(250, 50);
+        ellipse(this.x + 2, this.y - 2, 2 * (this.w / 3), 2 * (this.w / 3));
+        ellipse(this.x + 4, this.y - 4, (this.w / 2), (this.w / 2));
+        ellipse(this.x + 7, this.y - 7, (this.w / 3), (this.w / 3));
+
+        this.tailAlpha = map(this.y, 0, height, 70, 10);
+        fill(this.r, this.g, this.b, this.tailAlpha);
+        beginShape();
+        vertex(this.x - this.w / 4, this.y - this.w / 4);
+        vertex(this.x + this.w / 4, this.y + this.w / 4);
+        vertex(this.origX + this.w / 4, this.origY + this.w / 4);
+        vertex(this.origX - this.w / 4, this.origY - this.w / 4);
+        endShape(CLOSE);
+    }
+
+    this.move = function () {
+        this.x -= this.speed;
+        this.y += this.speed;
+    }
+    this.reset = function () {
+        this.x = random(width);
+        this.y = random(-200, -50);
+        this.origX = this.x;
+        this.origY = this.y;
+    }
+}
 function drawStartScreen() {
     background(4, 159, 266);
     fill(255);
@@ -1320,49 +1341,6 @@ class Sparkle {
     reset() { this.x = random(this.canvasWidth); this.y = random(-200, -50); }
 }
 
-function Meteor() {
-    this.x = random(width);
-    this.y = random(-3, -10);
-    this.speed = random(2, 4);
-    this.w = random(10, 15);
-    this.r = random(152, 255);
-    this.g = random(152, 255);
-    this.b = random(152, 255);
-    this.origX = this.x;
-    this.origY = this.y;
-    this.tailAlpha = 100;
-
-    this.show = function () {
-        fill(250, 70);
-        ellipse(this.x, this.y, this.w, this.w);
-        ellipse(this.x, this.y, this.w / 3, this.w / 3);
-
-        fill(250, 50);
-        ellipse(this.x + 2, this.y - 2, 2 * (this.w / 3), 2 * (this.w / 3));
-        ellipse(this.x + 4, this.y - 4, (this.w / 2), (this.w / 2));
-        ellipse(this.x + 7, this.y - 7, (this.w / 3), (this.w / 3));
-
-        this.tailAlpha = map(this.y, 0, height, 70, 10);
-        fill(this.r, this.g, this.b, this.tailAlpha);
-        beginShape();
-        vertex(this.x - this.w / 4, this.y - this.w / 4);
-        vertex(this.x + this.w / 4, this.y + this.w / 4);
-        vertex(this.origX + this.w / 4, this.origY + this.w / 4);
-        vertex(this.origX - this.w / 4, this.origY - this.w / 4);
-        endShape(CLOSE);
-    }
-
-    this.move = function () {
-        this.x -= this.speed;
-        this.y += this.speed;
-    }
-    this.reset = function () {
-        this.x = random(width);
-        this.y = random(-200, -50);
-        this.origX = this.x;
-        this.origY = this.y;
-    }
-}
 // ===== ENEMIES =====
 
 function spawnEnemy() {
@@ -1637,11 +1615,301 @@ function drawUI() {
     text("Lives: " + game2Lives, width - 20, 50);
 }
 
+// ===== BULLET CLASS=====
+class Bullet {
+    constructor(x, y, speed = 10, size = 10) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.size = size;
+        this.toDelete = false;
+    }
 
-function runGame3() {
-    background(220, 200, 255);
-    textSize(50);
-    text("Game 3 Start!", width / 2, height / 2);
+    move() {
+        this.y -= this.speed;
+        if (this.y < 0) this.toDelete = true;
+    }
+
+    show() {
+        fill(255, 0, 0);
+        noStroke();
+        ellipse(this.x, this.y, this.size, this.size);
+    }
 }
 
 
+
+
+
+// ===== GAME 3 VARS =====
+let game3Lives = 6;
+let plane3Size = 40;
+let game3Score = 0;
+let game3StartTime = 0;
+let game3Target = 20;
+let game3Time = 80;
+let game3Stage = "start";   // start → play → win/lose
+
+let planeX3, planeY3;
+let bullets3 = [];
+let enemies3 = [];
+let lastBulletTime3 = 0;
+
+
+
+// ===== INIT =====
+function initGame3() {
+    game3Stage = "start";
+    planeX3 = width / 2;
+    planeY3 = height - 150;
+    bullets3 = [];
+    enemies3 = [];
+    game3Score = 0;
+    game3Lives = 6;
+}
+
+// ===== START SCREEN =====
+function drawGame3Start() {
+    background(0);
+    fill(255);
+    textSize(50);
+    textAlign(CENTER, CENTER);
+    text("GAME 3", width / 2, height / 2 - 80);
+
+    textSize(28);
+    fill(200);
+    text("Click to Start", width / 2, height / 2 + 20);
+}
+function drawPlane3() {
+
+    imageMode(CENTER);
+    image(flameImg, planeX3, planeY3 + 80, 80, 70);
+
+    noStroke();
+    fill(30, 60, 140);
+
+    ellipse(planeX3, planeY3, plane3Size * 1, plane3Size * 2.8);
+
+    triangle(
+        planeX3 - plane3Size, planeY3 + 25,
+        planeX3 + plane3Size, planeY3 + 25,
+        planeX3, planeY3 - 30
+    );
+
+    triangle(
+        planeX3 - plane3Size / 2, planeY3 + 35,
+        planeX3 + plane3Size / 2, planeY3 + 35,
+        planeX3, planeY3 - 30
+    );
+}
+function runGame3() {
+
+    // ===== START =====
+    if (game3Stage === "start") {
+        drawGame3Start();
+        return;
+    }
+
+    // ===== PLAY =====
+    if (game3Stage === "play") {
+
+        drawGame3Background();
+
+        // Timer
+        let elapsed = (millis() - game3StartTime) / 1000;
+        let remaining = game3Time - elapsed;
+        if (remaining <= 0) game3Stage = "lose";
+
+        // Plane movement
+        planeX3 = constrain(lerp(planeX3, mouseX, 0.15), 50, width - 50);
+        planeY3 = height - 150;
+
+        // Draw plane 
+        drawPlane3();
+
+        // Spawn enemy
+        if (frameCount % 45 === 0) spawnEnemy3();
+
+        // --- collision with player ---
+        let d = dist(planeX3, planeY3, e.x, e.y);
+
+        if (d < e.size / 2 + plane3Size / 2) {
+
+            if (e.type === "red") {
+                // ★★★ 红色敌人：直接死亡 ★★★
+                game3Stage = "lose";
+                return;
+            }
+
+            // 非红色敌人：扣生命
+            game3Lives--;
+            enemies3.splice(i, 1);
+
+            if (game3Lives <= 0) {
+                game3Stage = "lose";
+            }
+
+            continue;
+        }
+
+        // ------ collision with bullets ------
+        for (let j = bullets3.length - 1; j >= 0; j--) {
+            let b = bullets3[j];
+            let d2 = dist(b.x, b.y, e.x, e.y);
+
+            if (d2 < e.size / 2 + b.size / 2) {
+                enemies3.splice(i, 1);
+                bullets3.splice(j, 1);
+
+                game3Score++;
+
+                if (game3Score >= game3Target)
+                    game3Stage = "win";
+
+                break;
+            }
+        }
+
+        if (!e.alive) enemies3.splice(i, 1);
+    }
+
+    // ===== BULLETS =====
+    for (let i = bullets3.length - 1; i >= 0; i--) {
+        let b = bullets3[i];
+        b.move();
+        b.show();
+        if (!b.active) bullets3.splice(i, 1);
+    }
+
+    // ===== UI =====
+    fill(255);
+    textSize(24);
+
+    textAlign(LEFT, TOP);
+    text("Score: " + game3Score + " / " + game3Target, 20, 20);
+    text("Lives: " + "❤️".repeat(game3Lives), 20, 60);
+
+    textAlign(RIGHT, TOP);
+    text("Time: " + remaining.toFixed(1), width - 20, 20);
+
+
+    // ===== WIN =====
+    else if (game3Stage === "win") {
+        background(0, 200, 100);
+        fill(255);
+        textSize(60);
+        text("YOU WIN!", width / 2, height / 2);
+    }
+
+    // ===== LOSE =====
+    else if (game3Stage === "lose") {
+        background(200, 0, 0);
+        fill(255);
+        textSize(60);
+        text("YOU LOSE", width / 2, height / 2);
+    }
+
+
+    // ===== BULLET =====
+    class Bullet3 {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.speed = 12;
+            this.size = 10;
+            this.active = true;
+        }
+
+        move() {
+            this.y -= this.speed;
+            if (this.y < -20) this.active = false;
+        }
+
+        show() {
+            fill(255, 60, 60);
+            noStroke();
+            ellipse(this.x, this.y, this.size);
+        }
+    }
+
+    function shootBulletGame3() {
+        bullets3.push(new Bullet3(planeX3, planeY3 - 40));
+    }
+
+
+
+    // ===== BACKGROUND =====
+    function drawGame3Background() {
+        for (let y = 0; y < height; y++) {
+            let c = map(y, 0, height, 0, 255);
+            stroke(c);
+            line(0, y, width, y);
+        }
+    }
+
+
+
+    // ===== ENEMY =====
+    class Enemy3 {
+        constructor() {
+            this.y = random(80, 250);
+            this.x = random(50, width - 50);
+            this.size = 40;
+
+            this.speedY = random(2.2, 3.5);
+            this.speedX = random(2.5, 4);
+
+            let r = random();
+            if (r < 0.33) {
+                this.type = "red";
+                this.color = "#ff0033";
+            } else if (r < 0.66) {
+                this.type = "pink";
+                this.color = "#f8c7db";
+                this.baseX = this.x;
+                this.phase = random(TWO_PI);
+                this.amplitude = random(80, 140);
+            } else {
+                this.type = "blue";
+                this.color = "#66ccff";
+                this.jumpTimer = 0;
+            }
+
+            this.alive = true;
+        }
+
+        move() {
+
+            if (this.type === "red") {
+                this.x = lerp(this.x, planeX3, 0.08);
+                this.y += this.speedY * 2.2;
+            }
+
+            else if (this.type === "pink") {
+                this.y += this.speedY;
+                this.x = this.baseX + sin(this.phase + this.y * 0.05) * this.amplitude;
+            }
+
+            else if (this.type === "blue") {
+                this.y += this.speedY;
+                this.jumpTimer++;
+                if (this.jumpTimer > random(15, 25)) {
+                    this.x += random(-120, 120);
+                    this.x = constrain(this.x, 40, width - 40);
+                    this.jumpTimer = 0;
+                }
+            }
+
+            if (this.y > height + 60) this.alive = false;
+        }
+
+        show() {
+            fill(this.color);
+            noStroke();
+            ellipse(this.x, this.y, this.size);
+        }
+    }
+
+    function spawnEnemy3() {
+        enemies3.push(new Enemy3());
+    }
