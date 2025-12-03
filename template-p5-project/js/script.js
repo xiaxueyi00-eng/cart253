@@ -4,7 +4,7 @@
  */
 
 "use strict";
-
+let shieldDurationMs = 5000;
 let score1 = 0;
 let flameImg;
 let game2Lives = 3;
@@ -1009,48 +1009,6 @@ function shootBullet() {
     bullets.push(new Bullet(planeX, planeY - 30));
 }
 
-// ===== UPDATE BULLETS =====
-function updateBullets() {
-    console.log("bullets content:", bullets);
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let b = bullets[i];
-
-
-        if (!b || typeof b.move !== 'function') {
-            bullets.splice(i, 1);
-            continue;
-        }
-
-
-        b.move();
-        b.show();
-
-
-        for (let enemy of enemies) {
-            if (!enemy.alive || enemy.absorbing) continue;
-        }
-    }
-
-    let d = dist(b.x, b.y, enemy.x, enemy.y);
-    if (d < (b.size / 2 + (enemy.size || 20) / 2)) {
-        b.toDelete = true;
-        enemy.hp = (enemy.hp || 1) - 1;
-
-        if (enemy.hp <= 0) {
-            enemy.alive = false;
-            game2Score += 10;
-            game2KillCount++;
-        }
-
-        if (enemy.type === "yellow") game2BonusTimeMs += 3000;
-        if (enemy.type === "red") {
-            gameOver = true;
-            timeOver = false;
-            game1Stage = "end";
-            if (b.toDelete) bullets.splice(i, 1);
-        }
-    }
-}
 
 
 function setupGame2() {
@@ -1347,20 +1305,32 @@ function spawnEnemy() {
     console.log("spawnEnemy called");
     game2EnemyCount++;
 
+
+    if (random() < 0.25) {
+        enemies.push(new RedSplitEnemy(random(50, width - 50), -40, 50, 0));
+        return;
+    }
+
+
     let r = random();
     let type, color;
 
     if (game2EnemyCount % 6 === 0) {
-        type = "yellow"; color = "#ffe600";
+        type = "yellow";
+        color = "#ffe600";
+
     } else if (r < 0.3) {
-        type = "red"; color = "#ff0033";
+        type = "red";
+        color = "#ff0033";
+
     } else {
-        type = "normal"; color = "#ffffff";
+        type = "normal";
+        color = "#ffffff";
     }
 
     let enemy = {
         x: random(50, width - 50),
-        y: random(50, 300),
+        y: random(-40, -100),
         size: 40,
         xspeed: random(-4, 4),
         yspeed: random(-4, 4),
@@ -1389,6 +1359,11 @@ function updateEnemies() {
         let e = enemies[i];
         if (!e.alive) { enemies.splice(i, 1); continue; }
 
+        if (e.type === "redSplit") {
+            e.move();
+            e.show();
+            continue;
+        }
 
         if (e.type === "normal") {
             e.x += e.xspeed; e.y += e.yspeed;
@@ -1423,34 +1398,6 @@ function updateEnemies() {
     }
 }
 
-function handleHit(enemy) {
-    if (!enemy.alive || enemy.absorbing) return;
-
-    enemy.alive = false;
-    enemy.absorbing = true;
-
-
-    if (enemy.type === "normal" || enemy.type === "yellow") {
-        game2Score += 10;
-        game2KillCount++;
-    }
-
-    if (enemy.type === "yellow") {
-        game2BonusTimeMs += 3000;
-    }
-
-    if (enemy.type === "red") {
-        if (!planeImmune) {
-            game2Lives--;
-            planeImmune = true;
-            planeImmuneTimer = millis();
-            if (game2Lives <= 0) {
-                game2Over = true;
-                game2Stage = "end";
-            }
-        }
-    }
-}
 function resetGame2() {
     bullets = [];
     enemies = [];
@@ -1491,62 +1438,6 @@ function Wave() {
         endShape(CLOSE);
         pop();
     }
-}
-// ===== BULLETS =====
-function updateBullets() {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let b = bullets[i];
-        if (!b.active) continue;
-
-        b.y -= b.speed;
-
-
-        fill("#ff0000");
-        ellipse(b.x, b.y, b.size);
-
-        for (let e of enemies) {
-            if (!e.alive || e.absorbing) continue;
-
-
-            let hitRadius = e.size / 2 + b.size / 2 + 5;
-            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
-                console.log("Bullet hit:", e.type);
-                b.active = false;
-                handleHit(e);
-            }
-        }
-
-        if (b.y < 0) b.active = false;
-    }
-}
-
-function handleHit(enemy) {
-    if (!enemy.alive) return;
-    enemy.absorbing = true;
-
-
-    if (enemy.type === "normal" || enemy.type === "yellow") {
-        game2KillCount++;
-        game2Score++;
-    }
-
-
-    if (enemy.type === "yellow") game2BonusTimeMs += 3000;
-
-
-    if (enemy.type === "red") {
-        if (!planeImmune) {
-            game2Lives--;
-            planeImmune = true;
-            planeImmuneTimer = millis();
-            if (game2Lives <= 0) {
-                game2Over = true;
-                game2Stage = "end";
-            }
-        }
-    }
-
-    enemy.alive = false;
 }
 
 
@@ -1636,6 +1527,116 @@ class Bullet {
         ellipse(this.x, this.y, this.size, this.size);
     }
 }
+class RedSplitEnemy {
+    constructor(x, y, size = 40, generation = 0) {
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.generation = generation;
+        this.speedY = random(2, 4);
+        this.speedX = random(-2, 2);
+        this.color = "#ff0033";
+        this.type = "redSplit";
+        this.alive = true;
+    }
+
+    move() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+
+
+        if (this.x < this.size / 2 || this.x > width - this.size / 2) {
+            this.speedX *= -1;
+        }
+
+        if (this.y > height + 50) this.alive = false;
+    }
+
+    show() {
+        noStroke();
+
+
+        if (this.generation === 0) {
+            fill("#ff0033");
+            ellipse(this.x, this.y, this.size);
+        } else {
+            noStroke();
+            strokeWeight(3);
+            fill("#f86986");
+            ellipse(this.x, this.y, this.size * 1.2);
+        }
+    }
+}
+function handleHit(enemy) {
+    if (!enemy.alive) return;
+
+
+    if (enemy.type === "redSplit") {
+
+
+        if (enemy.generation === 0) {
+            let childSize = enemy.size * 0.6;
+
+            enemies.push(new RedSplitEnemy(enemy.x - 20, enemy.y, childSize, 1));
+            enemies.push(new RedSplitEnemy(enemy.x + 20, enemy.y, childSize, 1));
+        }
+
+
+        enemy.alive = false;
+
+        game2Score += 10;
+        game2KillCount++;
+
+        return;
+    }
+
+
+    enemy.alive = false;
+    enemy.absorbing = true;
+
+    if (enemy.type === "normal" || enemy.type === "yellow") {
+        game2Score += 10;
+        game2KillCount++;
+    }
+
+    if (enemy.type === "yellow") {
+        game2BonusTimeMs += 3000;
+    }
+
+    if (enemy.type === "red") {
+        if (!planeImmune) {
+            game2Lives--;
+            planeImmune = true;
+            planeImmuneTimer = millis();
+            if (game2Lives <= 0) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+        }
+    }
+}
+function updateBullets() {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        if (!b) continue;
+
+        b.move();
+        b.show();
+
+        for (let e of enemies) {
+            if (!e.alive) continue;
+
+            let hitRadius = e.size / 2 + b.size / 2;
+            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
+                handleHit(e);
+                b.toDelete = true;
+            }
+        }
+
+        if (b.toDelete || b.y < 0) bullets.splice(i, 1);
+    }
+}
+
 
 
 
@@ -1649,11 +1650,14 @@ let game3StartTime = 0;
 let game3Target = 20;
 let game3Time = 80;
 let game3Stage = "start";   // start → play → win/lose
-
+let game3BestScore = 0;
+let bgMeteors = [];
 let planeX3, planeY3;
 let bullets3 = [];
 let enemies3 = [];
 let lastBulletTime3 = 0;
+
+
 
 
 
@@ -1666,6 +1670,8 @@ function initGame3() {
     enemies3 = [];
     game3Score = 0;
     game3Lives = 6;
+    setupBackgroundMeteors();
+
 }
 
 // ===== START SCREEN =====
@@ -1702,6 +1708,7 @@ function drawPlane3() {
         planeX3, planeY3 - 30
     );
 }
+
 function runGame3() {
 
     // ===== START =====
@@ -1730,186 +1737,350 @@ function runGame3() {
         // Spawn enemy
         if (frameCount % 45 === 0) spawnEnemy3();
 
-        // --- collision with player ---
-        let d = dist(planeX3, planeY3, e.x, e.y);
+        // ======== ENEMY LOOP ========
+        for (let i = enemies3.length - 1; i >= 0; i--) {
 
-        if (d < e.size / 2 + plane3Size / 2) {
+            let e = enemies3[i];
+            e.move();
+            e.show();
 
-            if (e.type === "red") {
-                // ★★★ 红色敌人：直接死亡 ★★★
-                game3Stage = "lose";
-                return;
-            }
+            // ------ collision with player ------
+            let d = dist(planeX3, planeY3, e.x, e.y);
 
-            // 非红色敌人：扣生命
-            game3Lives--;
-            enemies3.splice(i, 1);
+            if (d < e.size / 2 + plane3Size / 2) {
 
-            if (game3Lives <= 0) {
-                game3Stage = "lose";
-            }
+                if (e.type === "boss") {
+                    game3Stage = "lose";
+                    return;
+                }
 
-            continue;
-        }
 
-        // ------ collision with bullets ------
-        for (let j = bullets3.length - 1; j >= 0; j--) {
-            let b = bullets3[j];
-            let d2 = dist(b.x, b.y, e.x, e.y);
-
-            if (d2 < e.size / 2 + b.size / 2) {
+                game3Lives--;
                 enemies3.splice(i, 1);
-                bullets3.splice(j, 1);
 
-                game3Score++;
-
-                if (game3Score >= game3Target)
-                    game3Stage = "win";
-
-                break;
+                if (game3Lives <= 0) game3Stage = "lose";
+                continue;
             }
+
+            // ------ collision with bullets ------
+            for (let j = bullets3.length - 1; j >= 0; j--) {
+                let b = bullets3[j];
+                let d2 = dist(b.x, b.y, e.x, e.y);
+
+                if (d2 < e.size / 2 + b.size / 2) {
+
+                    if (e.type === "boss") {
+                        // Boss 
+                        e.hp--;
+                        bullets3.splice(j, 1);
+
+                        if (e.hp <= 0) {
+                            enemies3.splice(i, 1);
+                            game3Score += 3;
+                            if (game3Score >= game3Target) game3Stage = "win";
+                        }
+                    } else {
+
+                        enemies3.splice(i, 1);
+                        bullets3.splice(j, 1);
+                        game3Score++;
+                        if (game3Score >= game3Target) game3Stage = "win";
+                    }
+
+                    break;
+                }
+            }
+
+            if (!e.alive) enemies3.splice(i, 1);
         }
 
-        if (!e.alive) enemies3.splice(i, 1);
+        // ===== BULLETS =====
+        for (let i = bullets3.length - 1; i >= 0; i--) {
+            let b = bullets3[i];
+            b.move();
+            b.show();
+            if (!b.active) bullets3.splice(i, 1);
+        }
+
+        // ===== UI =====
+        fill(255);
+        textSize(24);
+
+        textAlign(LEFT, TOP);
+        text("Score: " + game3Score + " / " + game3Target, 20, 20);
+        text("Lives: " + "❤️".repeat(game3Lives), 20, 60);
+
+        textAlign(RIGHT, TOP);
+        text("Time: " + remaining.toFixed(1), width - 20, 20);
     }
-
-    // ===== BULLETS =====
-    for (let i = bullets3.length - 1; i >= 0; i--) {
-        let b = bullets3[i];
-        b.move();
-        b.show();
-        if (!b.active) bullets3.splice(i, 1);
-    }
-
-    // ===== UI =====
-    fill(255);
-    textSize(24);
-
-    textAlign(LEFT, TOP);
-    text("Score: " + game3Score + " / " + game3Target, 20, 20);
-    text("Lives: " + "❤️".repeat(game3Lives), 20, 60);
-
-    textAlign(RIGHT, TOP);
-    text("Time: " + remaining.toFixed(1), width - 20, 20);
-
 
     // ===== WIN =====
     else if (game3Stage === "win") {
+
+        if (game3Score > game3BestScore) {
+            game3BestScore = game3Score;
+        }
+
         background(0, 200, 100);
+
         fill(255);
-        textSize(60);
-        text("YOU WIN!", width / 2, height / 2);
+        textAlign(CENTER, CENTER);
+
+        textSize(70);
+        text("YOU WIN!", width / 2, height / 2 - 120);
+
+        textSize(40);
+        text("Score: " + game3Score, width / 2, height / 2 - 40);
+
+        textSize(32);
+        text("Best: " + game3BestScore, width / 2, height / 2 + 20);
+
+        textSize(28);
+        text("Click to return", width / 2, height / 2 + 120);
     }
 
     // ===== LOSE =====
     else if (game3Stage === "lose") {
+
+        if (game3Score > game3BestScore) {
+            game3BestScore = game3Score;
+        }
+
         background(200, 0, 0);
+
         fill(255);
-        textSize(60);
-        text("YOU LOSE", width / 2, height / 2);
+        textAlign(CENTER, CENTER);
+
+        textSize(70);
+        text("YOU LOSE", width / 2, height / 2 - 120);
+
+        textSize(40);
+        text("Score: " + game3Score, width / 2, height / 2 - 40);
+
+        textSize(32);
+        text("Best: " + game3BestScore, width / 2, height / 2 + 20);
+
+        textSize(28);
+        text("Click to retry", width / 2, height / 2 + 120);
+    }
+}
+
+// ===== BULLET =====
+class Bullet3 {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.speed = 12;
+        this.size = 10;
+        this.active = true;
     }
 
+    move() {
+        this.y -= this.speed;
+        if (this.y < -20) this.active = false;
+    }
 
-    // ===== BULLET =====
-    class Bullet3 {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.speed = 12;
-            this.size = 10;
-            this.active = true;
-        }
+    show() {
+        fill(255, 60, 60);
+        noStroke();
+        ellipse(this.x, this.y, this.size);
+    }
+}
 
-        move() {
-            this.y -= this.speed;
-            if (this.y < -20) this.active = false;
-        }
+function shootBulletGame3() {
+    bullets3.push(new Bullet3(planeX3, planeY3 - 40));
+}
 
-        show() {
-            fill(255, 60, 60);
-            noStroke();
-            ellipse(this.x, this.y, this.size);
+
+
+function setupBackgroundMeteors() {
+    bgMeteors = [];
+    for (let i = 0; i < 6; i++) {
+        bgMeteors.push(new BackgroundMeteor());
+    }
+}
+// ===== BACKGROUND =====
+function drawGame3Background() {
+
+    for (let y = 0; y < height; y++) {
+        let c = map(y, 0, height, 0, 255);
+        stroke(c);
+        line(0, y, width, y);
+    }
+
+    for (let m of bgMeteors) {
+        m.update();
+        m.show();
+    }
+}
+
+class BackgroundMeteor {
+    constructor() {
+        this.x = random(width);
+        this.y = random(height);
+        this.size = random(120, 200);
+        this.speedY = random(0.2, 0.6);
+        this.speedX = random(-0.5, 0.5);
+        this.offset = random(TWO_PI);
+        this.craters = [];
+
+
+        let craterCount = floor(random(4, 10));
+        for (let i = 0; i < craterCount; i++) {
+            this.craters.push({
+                ox: random(-this.size * 0.3, this.size * 0.3),
+                oy: random(-this.size * 0.3, this.size * 0.3),
+                r: random(this.size * 0.1, this.size * 0.3)
+            });
         }
     }
 
-    function shootBulletGame3() {
-        bullets3.push(new Bullet3(planeX3, planeY3 - 40));
+    update() {
+
+        this.y += this.speedY;
+
+
+        this.x += this.speedX;
+
+
+        this.x += sin(frameCount * 0.01 + this.offset) * 0.5;
+
+
+        if (this.y > height + this.size) {
+            this.y = -this.size;
+            this.x = random(width);
+        }
+
+
+        this.x = constrain(this.x, -50, width + 50);
     }
 
+    show() {
+        noStroke();
 
 
-    // ===== BACKGROUND =====
-    function drawGame3Background() {
-        for (let y = 0; y < height; y++) {
-            let c = map(y, 0, height, 0, 255);
-            stroke(c);
-            line(0, y, width, y);
+        fill(130);
+        ellipse(this.x, this.y, this.size);
+
+
+        fill(90);
+        for (let c of this.craters) {
+            ellipse(this.x + c.ox, this.y + c.oy, c.r);
+        }
+    }
+}
+
+// ===== ENEMY =====
+
+
+// ===== ENEMY =====
+class Enemy3 {
+    constructor() {
+        this.y = random(80, 250);
+        this.x = random(50, width - 50);
+        this.size = 40;
+
+        this.speedY = random(2.0, 3.0);
+        this.speedX = random(2.0, 3.5);
+
+        this.alive = true;
+        this.angle = 0;          // for spin enemy
+        this.hp = 1;             // default hp
+
+        let r = random();
+
+        if (r < 0.25) {
+            //  Spin enemy
+            this.type = "spin";
+            this.color = "#ff0033";
+            this.rotationSpeed = random(0.15, 0.35);
+
+        } else if (r < 0.65) {
+
+            this.type = "pink";
+            this.color = "#f8c7db";
+            this.baseX = this.x;
+            this.phase = random(TWO_PI);
+            this.amplitude = random(80, 140);
+
+        } else if (r < 0.95) {
+
+            this.type = "blue";
+            this.color = "#66ccff";
+            this.jumpTimer = 0;
+
+        } else {
+
+            this.type = "boss";
+            this.color = "#aa88ff";
+            this.size = 70;
+            this.hp = 3;  // 3 hits to kill
+            this.speedY = random(0.8, 1.5);
+            this.speedX = random(1.5, 2.5) * (random() < 0.5 ? -1 : 1);
         }
     }
 
+    move() {
+        if (this.type === "spin") {
 
+            this.y += this.speedY;
+            this.x += cos(this.angle) * 1.5;
+            this.angle += this.rotationSpeed;
 
-    // ===== ENEMY =====
-    class Enemy3 {
-        constructor() {
-            this.y = random(80, 250);
-            this.x = random(50, width - 50);
-            this.size = 40;
+        } else if (this.type === "pink") {
+            this.y += this.speedY;
+            this.x = this.baseX + sin(this.phase + this.y * 0.05) * this.amplitude;
 
-            this.speedY = random(2.2, 3.5);
-            this.speedX = random(2.5, 4);
-
-            let r = random();
-            if (r < 0.33) {
-                this.type = "red";
-                this.color = "#ff0033";
-            } else if (r < 0.66) {
-                this.type = "pink";
-                this.color = "#f8c7db";
-                this.baseX = this.x;
-                this.phase = random(TWO_PI);
-                this.amplitude = random(80, 140);
-            } else {
-                this.type = "blue";
-                this.color = "#66ccff";
+        } else if (this.type === "blue") {
+            this.y += this.speedY;
+            this.jumpTimer++;
+            if (this.jumpTimer > random(15, 25)) {
+                this.x += random(-120, 120);
+                this.x = constrain(this.x, 40, width - 40);
                 this.jumpTimer = 0;
             }
 
-            this.alive = true;
+        } else if (this.type === "boss") {
+
+            this.y += this.speedY;
+            this.x += this.speedX;
+
+            if (this.x < 60 || this.x > width - 60) {
+                this.speedX *= -1;
+            }
         }
 
-        move() {
+        if (this.y > height + 60) this.alive = false;
+    }
 
-            if (this.type === "red") {
-                this.x = lerp(this.x, planeX3, 0.08);
-                this.y += this.speedY * 2.2;
-            }
+    show() {
+        noStroke();
+        if (this.type === "spin") {
 
-            else if (this.type === "pink") {
-                this.y += this.speedY;
-                this.x = this.baseX + sin(this.phase + this.y * 0.05) * this.amplitude;
-            }
-
-            else if (this.type === "blue") {
-                this.y += this.speedY;
-                this.jumpTimer++;
-                if (this.jumpTimer > random(15, 25)) {
-                    this.x += random(-120, 120);
-                    this.x = constrain(this.x, 40, width - 40);
-                    this.jumpTimer = 0;
-                }
-            }
-
-            if (this.y > height + 60) this.alive = false;
-        }
-
-        show() {
+            push();
+            translate(this.x, this.y);
+            rotate(this.angle);
             fill(this.color);
-            noStroke();
+            ellipse(0, 0, this.size);
+
+            stroke(255);
+            strokeWeight(3);
+            line(0, 0, this.size / 2, 0);
+            pop();
+        } else if (this.type === "boss") {
+
+            fill(this.color);
+            ellipse(this.x, this.y, this.size);
+            fill(255, 255, 255, 70);
+            ellipse(this.x, this.y, this.size * 1.3);
+        } else {
+            fill(this.color);
             ellipse(this.x, this.y, this.size);
         }
     }
+}
 
-    function spawnEnemy3() {
-        enemies3.push(new Enemy3());
-    }
+function spawnEnemy3() {
+    enemies3.push(new Enemy3());
+}
+
