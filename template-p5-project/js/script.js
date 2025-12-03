@@ -5,13 +5,23 @@
 
 "use strict";
 
-// ===== METEOR SYSTEM FOR GAME 2 =====
+let flameImg;
+let game2Lives = 2;
 let meteors = [];
-let meteorNum = 8;
+let stars2 = [];
+let meteorNum = 4;
+let starNum = 100;
+let wave;
+let yoff = 0;
+let vertices = [];
+
+let game2LastBulletTime = 0;
+let playerHit = false;
+// ===== METEOR SYSTEM FOR GAME 2 =====
+
 let planeSpeed = 1;
 
 
-let planeBoost = false;
 let bossBullets = [];
 let cloudLayers = [];
 let level1Cleared = false;
@@ -26,14 +36,9 @@ let monster = {
 };
 
 let game1KillCount = 0;
-let game2KillCount = 0;
 let game3KillCount = 0;
-
-let game2EnemyCount = 0;
 // ===== GLOBAL =====
 let stage = "intro";  // intro → sunAppear → rules → game1
-let planeX = 450;
-let planeY = 750;
 let bgY1 = 0;
 let bgY2 = -900;
 
@@ -54,30 +59,63 @@ let bonusTimeMs = 0;
 
 let timeOver = false;
 let gameOver = false;
-
-
 /* ===== GAME 2 VARS ===== */
-let game2Stage = "start";
-let game2Score = 0;
-let game2BestScore = 0;
+// ===== GLOBAL VARIABLES =====
 
-let game2StartTime = 0;
-let game2BaseTimeMs = 40000;
+let sparkles = [];
+let enemies = [];
+let bullets = [];
+
+let planeX, planeY;
+let planeBoost = false;
+
+
+let planeImmune = false;
+let planeImmuneTimer = 0;
+let game2StartTime;
+let game2BaseTimeMs = 60000;
 let game2BonusTimeMs = 0;
 
-let game2EnemySpawnInterval = 35;
+let game2Score = 0;
+let game2BestScore = 0;
+let game2KillCount = 0;
+let game2EnemyCount = 0;
+
+let game2EnemySpawnInterval = 60;
+let game2Stage = "start";
+let game2Over = false;
+let game2TimeOver = false;
 
 
-let stars2 = [];
 let starDensity2 = 170 / (900 * 900);
+function setupStars2() {
 
+    stars2 = [];
+    for (let i = 0; i < 100; i++) {
+        stars2.push({
+            x: random(width),
+            y: random(height),
+            size: random(1, 3),
+            update: function () {
+                this.y += 0.5;
+                if (this.y > height) this.y = 0;
+            },
+            display: function () {
+                fill(255);
+                ellipse(this.x, this.y, this.size);
+            }
+        });
+    }
+
+
+    sparkles = [];
+}
 
 // plane
 let planeSize = 40;
 
 // bullets & enemies
-let bullets = [];
-let enemies = [];
+
 let enemyCount = 0;
 let enemySpawnInterval = 40;
 
@@ -94,7 +132,6 @@ let game2RainEnemy = null;
 
 
 // ====== SOUNDS ======
-let flameImg;
 let rainSound;
 let shootSound;
 
@@ -113,28 +150,27 @@ function preload() {
         (err) => console.error("shootSound failed to load", err)
     );
 }
+
 // ====== SETUP ======
+
 function setup() {
     createCanvas(900, 900);
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
+    stars = [];
+    initPrettyStormClouds();
+
+    planeX = width / 2;
+    planeY = height - 100;
+
+    meteors.push(new Meteor(100, 0, 5));
+    meteors.push(new Meteor(300, -50, 3));
 
     for (let i = 0; i < meteorNum; i++) {
         meteors.push(new Meteor());
     }
-
-
-    initPrettyStormClouds();
-    setupStars2();
-    initSimplePinkClouds();
-
-    if (rainSound.isLoaded()) {
-        rainSound.loop();
-    } else {
-        console.log("rainSound not loaded yet");
-    }
-
 }
+
 function drawStarBackground2() {
     background(0);
 
@@ -223,33 +259,17 @@ function drawPrettyStormClouds() {
         }
 
 
-        c.x += sin(frameCount * 0.005 + c.noiseOffset) * 0.3;
+        c.x += sin(frameCount * 20 + c.noiseOffset) * 20;
 
 
         if (c.x > width + 200) c.x = -200;
         if (c.x < -200) c.x = width + 200;
     }
 }
-class Star2 {
-    constructor() {
-        this.x = random(width);
-        this.y = random(height);
-        this.size = random(1, 4);
-        this.brightness = random(100, 255);
-    }
 
-    update() {
 
-        this.brightness = random(100, 255);
-    }
 
-    display() {
-        noStroke();
-        fill(this.brightness);
-        ellipse(this.x, this.y, this.size, this.size);
-    }
-}
-// ===== INTRO ANIMATION CLOUDS =====
+// ===== CLOUDS =====
 let cloudLeft = [
     { x: 450, y: -50 },
     { x: 420, y: 80 },
@@ -263,10 +283,14 @@ let cloudRight = [
     { x: 300, y: 60 },
 ];
 
-// SUN
+// ===== SUN =====
 let sunRadius = 20;
 let glowSize = 0;
 let glowGrow = 1;
+
+// ===== STARS ARRAY =====
+let stars = [];
+
 
 
 function draw() {
@@ -279,24 +303,22 @@ function draw() {
     else if (stage === "game2") runGame2();
     else if (stage === "game3") runGame3();
 
+
+
+
+
+    // ===== GAME1 END SCREEN =====
     if (game1Stage === "end") {
         background(0);
-        textAlign(CENTER, CENTER);
-
         textSize(55);
-        if (gameOver) {
-            fill("red");
-            text("YOU LOSE!", width / 2, height / 2 - 120);
-        } else if (timeOver) {
-            fill("yellow");
-            text("TIME'S UP!", width / 2, height / 2 - 120);
-        }
+        if (gameOver) fill("red");
+        else if (timeOver) fill("yellow");
+        text(gameOver ? "YOU LOSE!" : "TRY AGAIN?", width / 2, height / 2 - 120);
 
         fill("white");
         textSize(40);
         text("Try Again", width / 2, height / 2 - 50);
 
-        fill("white");
         textSize(32);
         text("Final Score: " + game1Score, width / 2, height / 2 + 20);
         text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
@@ -305,24 +327,19 @@ function draw() {
         text("Click to Return", width / 2, height / 2 + 150);
     }
 
+    // ===== GAME2 END SCREEN =====
     if (stage === "game2" && game2Stage === "end") {
         background(0);
-        textAlign(CENTER, CENTER);
-
         textSize(55);
-        if (game2Over) {
-            fill("red");
-            text("YOU LOSE!", width / 2, height / 2 - 120);
-        } else if (game2TimeOver) {
-            fill("yellow");
-            text("TIME'S UP!", width / 2, height / 2 - 120);
-        }
+        textAlign(CENTER, CENTER);
+        if (game2Over) fill("red");
+        else if (game2TimeOver) fill("yellow");
+        text(game2Over ? "YOU LOSE!" : "TIME'S UP!", width / 2, height / 2 - 120);
 
         fill("white");
         textSize(40);
         text("Try Again", width / 2, height / 2 - 50);
 
-        fill("white");
         textSize(32);
         text("Final Score: " + game2Score, width / 2, height / 2 + 20);
         text("Best Score: " + game2BestScore, width / 2, height / 2 + 70);
@@ -331,6 +348,14 @@ function draw() {
         text("Click to Return", width / 2, height / 2 + 150);
     }
 }
+
+// ===== PLACEHOLDER FUNCTIONS =====
+function runIntroAnimation() { }
+function runSunAppear() { }
+function runRulesScreen() { }
+function runGame1() { }
+function runGame2() { }
+function runGame3() { }
 
 /* ---------------- CLOUD GRADIENT CIRCLE ---------------- */
 function drawCloudCircle(cx, cy, radius) {
@@ -454,58 +479,110 @@ function getCircularButtons(cx, cy, radius) {
     return arr;
 }
 
+function shootBulletGame1() {
+    let b = new Bullet(planeX, planeY - 20, 12, 10);
+    b.active = true;
+    bullets.push(b);
+}
+function updateBulletsGame1() {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.y -= b.speed;
+        fill(255, 0, 0);
+        ellipse(b.x, b.y, b.size);
+
+        for (let e of enemies) {
+            if (!e.alive) continue;
+            let hitRadius = e.size / 2 + b.size / 2 + 5;
+            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
+                b.active = false;
+                e.absorbing = true;
+                e.alive = false;
+                game1Score++;
+            }
+        }
+
+        if (b.y < 0 || !b.active) bullets.splice(i, 1);
+    }
+}
 /* ======================================================
    INPUT
 ====================================================== */
-
 function keyPressed() {
+    // ===== Game1 =====
     if (stage === "game1" && game1Stage === "play") {
         if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
-            bullets.push({
-                x: planeX,
-                y: planeY - 20,
-                size: 10,
-                speed: 12,
-                active: true
-            });
+            shootBulletGame1();
             lastBulletTime = millis();
-            shootSound.play();
-        }
-    }
-    // ========== Game 2 ========== 
-    if (stage === "game2" && game2Stage === "play") {
-        if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
-            bullets.push({
-                x: planeX,
-                y: planeY - 20,
-                size: 10,
-                speed: 12,
-                active: true
-            });
-            lastBulletTime = millis();
-            shootSound.play();
+            if (shootSound) shootSound.play();
         }
     }
 
+
+    if (stage === "game2") {
+        if (game2Stage === "start") {
+            if (key === ' ') {
+                game2Stage = "play";
+                game2StartTime = millis();
+                setupGame2();
+            }
+        }
+        else if (game2Stage === "play") {
+            if (key === ' ' && (!game2LastBulletTime || millis() - game2LastBulletTime > bulletCooldown)) {
+
+                bullets.push(new Bullet(planeX, planeY - 20, 7));
+
+                game2LastBulletTime = millis();
+
+
+                if (shootSound) shootSound.play();
+            }
+        }
+        else if (game2Stage === "end") {
+            if (key === ' ') {
+                game2Stage = "start";
+            }
+        }
+    }
 }
 
+
+
 function mousePressed() {
-    // ==== Back Button ====
-    if (mouseX > 20 && mouseX < 140 && mouseY > 35 && mouseY < 85) {
-        if (stage === "game1" && game1Stage === "end") {
-            game1Stage = "start";
-            stage = "rules";
-            // Stop background vosic
-            if (rainSound.isPlaying()) rainSound.stop();
-            return;
-        }
-        if (stage === "game2End") {
-            stage = "rules";
-            return;
-        }
+    // GAME1 START
+    if (game1Stage === "start") {
+        game1Stage = "play";
+        game1StartTime = millis();
+    }
+    if (stage === "game1" && game1Stage === "end") {
+        stage = "rules";
+        game1Stage = "start";
+        if (rainSound.isPlaying()) rainSound.stop();
+        return;
     }
 
-    // ------- RULES PAGE -------
+    if (stage === "game2" && game2Stage === "start") {
+        if (mouseX > width / 2 - 80 && mouseX < width / 2 + 80 &&
+            mouseY > height / 2 + 35 && mouseY < height / 2 + 85) {
+            game2Stage = "play";
+            game2StartTime = millis();
+            setupGame2();
+        }
+    }
+    // GAME2 SHOOT
+    if (stage === "game2" && !game2Over) {
+
+    }
+
+    // GAME2 END
+    if (stage === "game2" && game2Stage === "end") {
+        resetGame2();
+        stage = "rules";
+        loop();
+        return;
+    }
+
+    // RULES PAGE
     if (stage === "rules") {
         let buttons = getCircularButtons(450, 450, 300);
         for (let b of buttons) {
@@ -517,114 +594,35 @@ function mousePressed() {
                 }
                 if (b.label === "game2") {
                     game2Stage = "start";
+                    setupGame2();
                 }
                 return;
             }
         }
-        return;
     }
 
-    // ------- GAME 1 : START -------
+    // GAME1 / GAME2 START
     if (stage === "game1" && game1Stage === "start") {
-        if (
-            mouseX > width / 2 - 110 &&
-            mouseX < width / 2 + 110 &&
-            mouseY > height / 2 + 100 &&
-            mouseY < height / 2 + 180
-        ) {
+        if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 &&
+            mouseY > height / 2 + 100 && mouseY < height / 2 + 180) {
             game1Stage = "play";
-            resetGame1();
             game1StartTime = millis();
+            resetGame1();
             if (!rainSound.isPlaying()) {
                 rainSound.setLoop(true);
                 rainSound.setVolume(0.3);
                 rainSound.play();
             }
-        }
-        return;
-    }
-
-    // ------- GAME 1 : END -------
-    if (stage === "game1" && game1Stage === "end") {
-        // click Try Again
-        if (
-            mouseX > width / 2 - 100 &&
-            mouseX < width / 2 + 100 &&
-            mouseY > height / 2 - 70 &&
-            mouseY < height / 2 - 30
-        ) {
-            game1Stage = "start";
-            resetGame1();
-
-            if (rainSound.isPlaying()) rainSound.stop();
             return;
         }
-
-        if (
-            mouseX > width / 2 - 120 &&
-            mouseX < width / 2 + 120 &&
-            mouseY > height / 2 + 130 &&
-            mouseY < height / 2 + 170
-        ) {
-            game1Stage = "start";
-            stage = "rules";
-            if (rainSound.isPlaying()) rainSound.stop();
-            return;
-        }
-        return;
     }
 
-    // ------- GAME 2 : START -------
     if (stage === "game2" && game2Stage === "start") {
-        if (
-            mouseX > width / 2 - 110 &&
-            mouseX < width / 2 + 110 &&
-            mouseY > height / 2 + 100 &&
-            mouseY < height / 2 + 180
-        ) {
+        if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 &&
+            mouseY > height / 2 + 100 && mouseY < height / 2 + 180) {
             game2Stage = "play";
             game2StartTime = millis();
-            game2Score = 0;
-            game2BonusTimeMs = 0;
-            game2BonusEatCount = 0;
-            enemies = [];
-            bullets = [];
-            setupStars2();
-        }
-        return;
-    }
-
-    // ------- GAME 2 : END -------
-    if (stage === "game2" && game2Stage === "end") {
-
-
-        if (
-            mouseX > width / 2 - 100 &&
-            mouseX < width / 2 + 100 &&
-            mouseY > height / 2 - 70 &&
-            mouseY < height / 2 - 30
-        ) {
-            game2Stage = "start";
-            game2Score = 0;
-            game2BonusTimeMs = 0;
-            game2BonusEatCount = 0;
-            enemies = [];
-            bullets = [];
-            setupStars2();
-            if (rainSound.isPlaying()) rainSound.stop();
-            return;
-        }
-
-
-        if (
-            mouseX > width / 2 - 120 &&
-            mouseX < width / 2 + 120 &&
-            mouseY > height / 2 + 130 &&
-            mouseY < height / 2 + 170
-        ) {
-            game2Stage = "start";
-            stage = "rules";
-            if (rainSound.isPlaying()) rainSound.stop();
+            setupGame2();
             return;
         }
     }
@@ -667,28 +665,8 @@ function drawPlane1() {
         planeX, planeY - 30
     );
 }
-/* ---------------- BULLETS ---------------- */
-function updateBullets1() {
-    for (let b of bullets) {
-        if (!b.active) continue;
 
-        b.y -= b.speed;
-        fill("#ff0000");
-        ellipse(b.x, b.y, b.size);
 
-        if (b.y < 0) b.active = false;
-
-        for (let e of enemies) {
-            if (!e.alive || e.absorbing) continue;
-
-            let d = dist(b.x, b.y, e.x, e.y);
-            if (d < e.size / 2 + b.size / 2) {
-                b.active = false;
-                handleHit1(e);
-            }
-        }
-    }
-}
 
 /* ---------------- ENEMIES ---------------- */
 function spawnEnemy1() {
@@ -943,13 +921,15 @@ function runGame1() {
 
         drawGradientBackground();
         runRainBackground();
-        drawSimplePinkClouds();
+
 
 
         if (planeBoost) {
+            planeY = height - 200;
             planeX = lerp(planeX, mouseX, 0.25);
         } else {
             planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, 850);
+
         }
         drawPlane1();
 
@@ -965,7 +945,7 @@ function runGame1() {
 
 
         if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
-        updateBullets1();
+        updateBullets();
         updateEnemies1();
 
         // UI
@@ -1019,415 +999,672 @@ function initSimplePinkClouds() {
 function drawGradientBackground() {
     let ctx = drawingContext;
 
-    let g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    let g = ctx.createLinearGradient(0, 0, 0, height);
+    ctx.fillRect(0, 0, width, height);
     g.addColorStop(0, "rgba(255, 180, 240, 1)");
     g.addColorStop(1, "rgba(180, 220, 255, 1)");
 
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
-function drawSimplePinkClouds() {
-    noStroke();
-
-    for (let c of simpleClouds) {
-
-        //  Light floating up & down
-        let floatY = c.y + sin(frameCount * 0.01 + c.offset) * 6;
-
-        // Move from left to right (increase 0.3 → faster)
-        c.x += 0.5;
 
 
-        if (c.x > width + 200) {
-            c.x = -200;
-        }
 
-        let floatX = c.x;
 
-        //  Pink radial gradient
-        let ctx = drawingContext;
-        let g = ctx.createRadialGradient(floatX, floatY, c.size * 0.2, floatX, floatY, c.size);
-        g.addColorStop(0, "rgba(255, 230, 250, 1)");
-        g.addColorStop(0.5, "rgba(255, 180, 240, 0.85)");
-        g.addColorStop(1, "rgba(255, 150, 230, 0.6)");
 
-        ctx.fillStyle = g;
 
-        // 3-circle cloud
-        ellipse(floatX, floatY, c.size * 1.5, c.size);
-        ellipse(floatX - c.size * 0.5, floatY + 10, c.size, c.size * 0.8);
-        ellipse(floatX + c.size * 0.5, floatY + 10, c.size, c.size * 0.8);
+
+
+
+
+// ===== BULLET CLASS =====
+class Bullet {
+    constructor(x, y, speed = 10, size = 10) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.size = size;
+        this.toDelete = false;
+    }
+
+    move() {
+        this.y -= this.speed;
+        if (this.y < 0) this.toDelete = true;
+    }
+
+    show() {
+        fill(255, 0, 0);
+        noStroke();
+        ellipse(this.x, this.y, this.size, this.size);
     }
 }
-//* GAME 2*//
-function runGame2() {
 
 
-    // ---- LEVEL CLEAR ----
-    if (game2KillCount >= 20) {
-        stage = "game3";
-        game3Stage = "start";
-        enemies = [];
-        bullets = [];
-        return;
-    }
 
-    // ---- TIME CALCULATION ----
-    let elapsed = millis() - game2StartTime;
-    let remaining = max(0, (game2Timer * 1000 - elapsed) / 1000);
-
-    if (remaining <= 0 && !game2Over) {
-
-        game2TimeOver = true;
-        game2Over = false;
-        game2Stage = "end";
-    }
-
-    // ---- PLAYER LOSE ----
-    if (playerHit2) {
-        game2Over = true;
-        game2TimeOver = false;
-        game2Stage = "end";
-    }
-
-    // ======== START SCREEN ========
-    if (game2Stage === "start") {
-        drawGradientBackground();
-
-        fill(0);
-        textSize(36);
-        text("Level 2: Hard Mode", width / 2, height / 2 - 120);
-
-        fill(255, 150, 150);
-        rect(width / 2, height / 2 + 140, 220, 80, 20);
-        fill(0);
-        textSize(28);
-        text("Start", width / 2, height / 2 + 140);
-
-        return;
-    }
-    // ======== END SCREEN ========
-    if (game2Stage === "end") {
-        background(0);
-
-        fill("yellow");
-        textSize(50);
-        text("TIME'S UP!", width / 2, height / 2 - 120);
-
-        fill("white");
-        textSize(32);
-        text("Final Score: " + game2Score, width / 2, height / 2 - 30);
-        text("Best Score: " + game2BestScore, width / 2, height / 2 + 20);
-
-        textSize(24);
-        text("Click to Return", width / 2, height / 2 + 100);
-        return;
-    }
-    // ------- GAME 2 : END -------
-    if (stage === "game2" && game2Stage === "end") {
-        game2Stage = "start";
-        stage = "rules";
-        return;
-    }
-    // ======== PLAY MODE ========
-    if (game2Stage === "play") {
-
-        drawStars2();
-
-        drawSparkles();
-        // ====== RAIN ENEMY TRIGGER ======
-        if (game2BonusEatCount === 8 && game2RainEnemy === null) {
-            game2RainEnemy = {
-                x: random(50, 850),
-                y: -60,
-                w: 6,
-                h: 40,
-                speed: 12,
-                alpha: 255
-            };
-        }
-
-        if (game2RainEnemy !== null) {
-            noStroke();
-            fill(150, 255, 255, game2RainEnemy.alpha);
-            rect(game2RainEnemy.x, game2RainEnemy.y, game2RainEnemy.w, game2RainEnemy.h, 10);
-            game2RainEnemy.y += game2RainEnemy.speed;
-
-            if (game2RainEnemy.y > height + 80) {
-                game2RainEnemy = null;
-            }
-        }
-
-        // Plane
-        planeX = constrain(mouseX, 50, 850);
-        drawPlane1();
-
-        if (planeBoost) {
-            fill(255, 100, 0, 180);
-            ellipse(planeX, planeY + 40, 20, 40);
-        }
-        // Bullets
-        updateBullets2();
-
-        // Enemies
-        if (frameCount % game2EnemySpawnInterval === 0) spawnEnemy2();
-        updateEnemies2();
-
-        // Time UI
-        let elapsed = millis() - game2StartTime;
-        let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
-
-        fill(0);
-        textSize(30);
-        text("Score: " + game2Score, width / 2, 55);
-        textSize(22);
-        text("Time: " + remaining.toFixed(1) + "s", width / 2, 20);
-
-        if (remaining <= 0) {
-            if (game2Score > game2BestScore) game2BestScore = game2Score;
-            game2Stage = "end";
-        }
-    }
-    // ===== METEORS (will kill player) =====
-    for (let m of meteors) {
-        m.show();
-        m.move();
-
-        // If hit player → game over
-        let d = dist(m.x, m.y, planeX, planeY);
-        if (d < 40) {
-            game2Stage = "end";
-        }
-
-        // Reset meteor if out of screen
-        if (m.y > height + 120) {
-            m.reset();
-        }
-    }
+// ===== SHOOT BULLET =====
+function shootBullet() {
+    bullets.push(new Bullet(planeX, planeY - 30));
 }
-function updateBullets2() {
-    for (let b of bullets) {
-        if (!b.active) continue;
 
-        b.y -= b.speed;
-        fill("#ff0000");
-        ellipse(b.x, b.y, b.size);
+// ===== UPDATE BULLETS =====
+function updateBullets() {
+    console.log("bullets content:", bullets);
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
 
-        if (b.y < 0) b.active = false;
 
-        for (let e of enemies) {
-            if (!e.alive || e.absorbing) continue;
-
-            let d = dist(b.x, b.y, e.x, e.y);
-            if (d < e.size / 2 + b.size / 2) {
-                b.active = false;
-                handleHit2(e);
-            }
-        }
-    }
-}
-function updateEnemies2() {
-    for (let e of enemies) {
-        if (!e.alive) continue;
-
-        // ⛔ Red enemy hits the player → Game Over
-        let d = dist(e.x, e.y, planeX, planeY);
-        if (e.type === "red" && d < e.size / 2 + planeSize / 2) {
-            game2Stage = "end";
-            return;
-        }
-
-        // Absorbing state (same logic as Game1)
-        if (e.absorbing) {
-            e.x = lerp(e.x, planeX, 0.2);
-            e.y = lerp(e.y, planeY, 0.2);
-            if (dist(e.x, e.y, planeX, planeY) < 10) {
-                e.alive = false;
-            }
+        if (!b || typeof b.move !== 'function') {
+            bullets.splice(i, 1);
             continue;
         }
 
-        //  NORMAL enemy — uses full “bouncing ball” movement
-        if (e.type === "normal") {
-            e.x += e.xspeed;
-            e.y += e.yspeed;
 
-            // Bounce horizontally
-            if (e.x > width - e.size / 2 || e.x < e.size / 2) {
-                e.xspeed = -e.xspeed;
+        b.move();
+        b.show();
+
+
+        for (let enemy of enemies) {
+            if (!enemy.alive || enemy.absorbing) continue;
+
+            let d = dist(b.x, b.y, enemy.x, enemy.y);
+            if (d < (b.size / 2 + (enemy.size || 20) / 2)) {
+                b.toDelete = true;
+                enemy.hp = (enemy.hp || 1) - 1;
+
+                if (enemy.hp <= 0) {
+                    enemy.alive = false;
+                    game2Score += 10;
+                    game2KillCount++;
+                }
+
+                if (enemy.type === "yellow") game2BonusTimeMs += 3000;
+                if (enemy.type === "red") {
+                    game2Over = true;
+                    game2Stage = "end";
+                }
             }
-            // Bounce vertically
-            if (e.y > height - e.size / 2 || e.y < e.size / 2) {
-                e.yspeed = -e.yspeed;
-            }
         }
 
-        //  Red enemy — tracking behavior
-        if (e.type === "red") {
-            e.y += e.speed;
-            e.x = lerp(e.x, planeX, 0.03);
-        }
 
-        // Yellow enemy — simple falling behavior
-        if (e.type === "yellow") {
-            e.y += e.speed;
-        }
-
-        fill(e.color);
-        ellipse(e.x, e.y, e.size);
-
-        // Remove falling-type enemies when they leave screen
-        if (e.y > height + 40 && e.type !== "normal") {
-            e.alive = false;
-        }
+        if (b.toDelete) bullets.splice(i, 1);
     }
 }
-function spawnEnemy2() {
 
-    game2EnemyCount++;
 
-    let difficulty = min(0.8, game2EnemyCount * 0.02);
-    let r = random();
 
-    let type = "normal";
-    let color = "#ffffff";   // ⭐ normal enemies are visible white
 
-    // Yellow bonus enemy
-    if (game2EnemyCount % 6 === 0) {
-        type = "yellow";
-        color = "#ffe600";
-    }
 
-    // Red dangerous enemy
-    if (r < difficulty) {
-        type = "red";
-        color = "#ff0033";
-    }
 
-    // ⭐ Spawn enemy (safe area, always visible)
-    let enemy = {
-        x: random(50, 850),
+
+
+
+
+function setupGame2() {
+    let stars = [];
+    let game2Score = 0;
+    let game2KillCount = 0;
+    let sparkles = [];
+    let enemy;
+
+    // --- RESET PLAYER ---
+    planeX = width / 2;
+    planeY = height - 100;
+
+    // --- ALWAYS RESET ARRAYS ---
+    bullets = [];
+    enemies = [];
+    meteors = [];
+    stars2 = [];
+    sparkles = [];
+
+    // --- GAME VARIABLES ---
+    game2Score = 0;
+    game2KillCount = 0;
+    game2EnemyCount = 0;
+    game2BonusTimeMs = 0;
+    game2LastBulletTime = 0;
+    game2Lives = 2;
+    game2Over = false;
+
+    planeImmune = false;
+    planeImmune = false;
+    planeImmuneTimer = 0;
+    // --- INITIALIZE ENVIRONMENT ---
+    setupStars2();
+    initMeteors();
+
+    enemy = {
+        x: random(50, width - 50),
         y: random(50, 300),
         size: 40,
         xspeed: random(-4, 4),
         yspeed: random(-4, 4),
         speed: random(3, 6),
         alive: true,
-        absorbing: false,
-        type,
-        color
+        hp: 3
     };
 
-    // ⭐ Prevent zero-speed bouncing
+
+    stars = [];
+    for (let i = 0; i < 20; i++) {
+        stars.push(new Star(random(width), random(height)));
+    }
+
+
+    sparkles = [];
+    for (let i = 0; i < meteorNum; i++) {
+        meteors.push(new Meteor());
+    }
+
+    for (let i = 0; i < starNum; i++) {
+        stars2.push(new Star());
+    }
+
+    wave = new Wave();
+}
+
+function setupStars2() {
+    stars2 = [];
+    for (let i = 0; i < 100; i++) {
+        stars2.push({
+            x: random(width),
+            y: random(height),
+            size: random(1, 3),
+            update: function () { this.y += 0.5; if (this.y > height) this.y = 0; },
+            display: function () { fill(255); ellipse(this.x, this.y, this.size); }
+        });
+    }
+    sparkles = [];
+}
+
+
+function initMeteors() {
+    meteors = [];
+    for (let i = 0; i < meteorNum; i++) {
+        meteors.push(new Meteor());
+    }
+}
+
+function drawPlane2() {
+    imageMode(CENTER);
+    image(flameImg, planeX, planeY + 80, 80, 70);
+    fill(30, 60, 140);
+    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);
+
+    fill(30, 60, 140);
+    triangle(
+        planeX - planeSize, planeY + 25,
+        planeX + planeSize, planeY + 25,
+        planeX, planeY - 30
+    );
+
+    fill(30, 60, 140);
+    triangle(
+        planeX - planeSize / 2, planeY + 35,
+        planeX + planeSize / 2, planeY + 35,
+        planeX, planeY - 30
+    );
+}
+
+// ===== GAME2 PLANE DRAW =====
+
+function runGame2() {
+    if (game2Stage === "start") {
+        drawStartScreen();
+    } else if (game2Stage === "play") {
+        background(0);
+
+
+        for (let s of stars2) {
+            s.update();
+            s.display();
+        }
+
+        planeY = height - 200;
+        planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, width - 50);
+        drawPlane2();
+
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].move();
+            bullets[i].show();
+
+
+            for (let enemy of enemies) {
+                if (!enemy.alive) continue;
+                let d = dist(bullets[i].x, bullets[i].y, enemy.x, enemy.y);
+                if (d < enemy.size / 2) {
+                    handleHit(enemy);
+                    bullets[i].toDelete = true;
+                }
+            }
+
+
+            if (bullets[i].toDelete) bullets.splice(i, 1);
+        }
+
+
+        updateEnemies();
+
+
+        checkMeteors();
+
+        // UI
+        drawUI();
+    } else if (game2Stage === "end") {
+        drawEndScreen();
+    }
+}
+function drawStartScreen() {
+    background(4, 159, 266);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(50);
+    text("GAME 2", width / 2, height / 2 - 120);
+
+    textSize(24);
+    text("Rules: Shoot enemies with SPACE.\nKill all 18 to clear the level.", width / 2, height / 2 - 40);
+
+    // Start 
+    fill(255, 204, 255);
+    rectMode(CENTER);
+    rect(width / 2, height / 2 + 60, 160, 50, 10);
+    fill(255);
+    textSize(28);
+    text("START", width / 2, height / 2 + 60);
+}
+
+function drawEndScreen() {
+    background(0);
+    textSize(55);
+    textAlign(CENTER, CENTER);
+    if (game2Over) fill("red");
+    else if (game2TimeOver) fill("yellow");
+    text(game2Over ? "YOU LOSE!" : "TIME'S UP!", width / 2, height / 2 - 120);
+
+    fill("white");
+    textSize(40);
+    text("Try Again", width / 2, height / 2 - 50);
+
+    textSize(32);
+    text("Final Score: " + game2Score, width / 2, height / 2 + 20);
+    text("Best Score: " + game2BestScore, width / 2, height / 2 + 70);
+
+    textSize(24);
+    text("Click to Return", width / 2, height / 2 + 150);
+}
+class Enemy {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 40;
+        this.speed = 3;
+    }
+
+    move() {
+        this.y += this.speed;
+    }
+
+    show() {
+        fill("red");
+        noStroke();
+        ellipse(this.x, this.y, this.size);
+    }
+}
+class Star {
+    constructor() {
+        this.x = random(width);
+        this.y = random(height);
+        this.a = random(0, PI);
+        this.speed = random(PI / 30);
+    }
+    update() { this.a += this.speed; }
+    display() {
+        let brightness = map(sin(this.a), -1, 1, 10, 250);
+        fill(255, brightness);
+        ellipse(this.x, this.y, 3, 3);
+    }
+}
+
+class Sparkle {
+    constructor(w, h) {
+        this.canvasWidth = w;
+        this.canvasHeight = h;
+        this.reset();
+        this.size = random(1, 6);
+        this.speed = random(1, 3);
+        this.r = 255; this.g = 255; this.b = 0;
+    }
+    show() {
+        fill(255, 120); ellipse(this.x, this.y, this.size);
+        fill(this.r, this.g, this.b, 80); ellipse(this.x, this.y, this.size / 2);
+    }
+    move() { this.x -= this.speed * 0.3; this.y += this.speed; }
+    reset() { this.x = random(this.canvasWidth); this.y = random(-200, -50); }
+}
+
+function Meteor() {
+    this.x = random(width);
+    this.y = random(-3, -10);
+    this.speed = random(2, 4);
+    this.w = random(10, 15);
+    this.r = random(152, 255);
+    this.g = random(152, 255);
+    this.b = random(152, 255);
+    this.origX = this.x;
+    this.origY = this.y;
+    this.tailAlpha = 100;
+
+    this.show = function () {
+        fill(250, 70);
+        ellipse(this.x, this.y, this.w, this.w);
+        ellipse(this.x, this.y, this.w / 3, this.w / 3);
+
+        fill(250, 50);
+        ellipse(this.x + 2, this.y - 2, 2 * (this.w / 3), 2 * (this.w / 3));
+        ellipse(this.x + 4, this.y - 4, (this.w / 2), (this.w / 2));
+        ellipse(this.x + 7, this.y - 7, (this.w / 3), (this.w / 3));
+
+        this.tailAlpha = map(this.y, 0, height, 70, 10);
+        fill(this.r, this.g, this.b, this.tailAlpha);
+        beginShape();
+        vertex(this.x - this.w / 4, this.y - this.w / 4);
+        vertex(this.x + this.w / 4, this.y + this.w / 4);
+        vertex(this.origX + this.w / 4, this.origY + this.w / 4);
+        vertex(this.origX - this.w / 4, this.origY - this.w / 4);
+        endShape(CLOSE);
+    }
+
+    this.move = function () {
+        this.x -= this.speed;
+        this.y += this.speed;
+    }
+    this.reset = function () {
+        this.x = random(width);
+        this.y = random(-200, -50);
+        this.origX = this.x;
+        this.origY = this.y;
+    }
+}
+// ===== ENEMIES =====
+
+function spawnEnemy() {
+    console.log("spawnEnemy called");
+    game2EnemyCount++;
+
+    let r = random();
+    let type, color;
+
+    if (game2EnemyCount % 6 === 0) {
+        type = "yellow"; color = "#ffe600";
+    } else if (r < 0.3) {
+        type = "red"; color = "#ff0033";
+    } else {
+        type = "normal"; color = "#ffffff";
+    }
+
+    let enemy = {
+        x: random(50, width - 50),
+        y: random(50, 300),
+        size: 40,
+        xspeed: random(-4, 4),
+        yspeed: random(-4, 4),
+        speed: random(2, 5),
+        alive: true,
+        absorbing: false,
+        type: type,
+        color: color,
+        hp: type === "red" ? 3 : 1
+    };
+
     if (abs(enemy.xspeed) < 1) enemy.xspeed = 2;
     if (abs(enemy.yspeed) < 1) enemy.yspeed = -2;
 
     enemies.push(enemy);
 }
 
-function setupStars2() {
-    stars2 = [];
-    let numStars = floor(starDensity2 * (width * height));
 
-    for (let i = 0; i < numStars; i++) {
-        stars2.push(new Star2());
+function updateEnemies() {
+    if (frameCount % 60 === 0) {
+        spawnEnemy();
+    }
+
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        if (!e.alive) { enemies.splice(i, 1); continue; }
+
+
+        if (e.type === "normal") {
+            e.x += e.xspeed; e.y += e.yspeed;
+            if (e.x > width - e.size / 2 || e.x < e.size / 2) e.xspeed *= -1;
+            if (e.y > height - e.size / 2 || e.y < e.size / 2) e.yspeed *= -1;
+        } else if (e.type === "red") {
+            e.y += e.speed;
+            e.x = lerp(e.x, planeX, 0.03);
+            if (dist(e.x, e.y, planeX, planeY) < 40) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+            if (e.y > height + 50) e.alive = false;
+        } else if (e.type === "yellow") {
+            e.y += e.speed;
+            if (e.y > height + 50) e.alive = false;
+        }
+
+
+        if (dist(e.x, e.y, planeX, planeY) < 40 && e.type !== "yellow" && !planeImmune) {
+            game2Lives--;
+            planeImmune = true;
+            planeImmuneTimer = millis();
+            if (game2Lives <= 0) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+        }
+
+        fill(e.color);
+        ellipse(e.x, e.y, e.size);
     }
 }
 
+function handleHit(enemy) {
+    if (!enemy.alive || enemy.absorbing) return;
 
-function drawStars2() {
-    background(0);
-    for (let s of stars2) {
-        s.update();
-        s.display();
+    enemy.alive = false;
+    enemy.absorbing = true;
+
+
+    if (enemy.type === "normal" || enemy.type === "yellow") {
+        game2Score += 10;
+        game2KillCount++;
     }
-}
-function handleHit2(e) {
-    game2KillCount++;
-    e.absorbing = true;
-    game2Score++;
 
-
-    if (e.type === "yellow") {
+    if (enemy.type === "yellow") {
         game2BonusTimeMs += 3000;
-        game2BonusEatCount++;
     }
 
-
-    if (e.type === "red") {
-        game2Stage = "end";
+    if (enemy.type === "red") {
+        if (!planeImmune) {
+            game2Lives--;
+            planeImmune = true;
+            planeImmuneTimer = millis();
+            if (game2Lives <= 0) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+        }
     }
 }
-function drawSparkles() {
+function resetGame2() {
+    bullets = [];
+    enemies = [];
+    game2KillCount = 0;
+    game2Score = 0;
+    game2Over = false;
+    game2Stage = "play";
+    planeX = width / 2;
+    planeY = height - 200;
+    game2StartTime = millis();
 
-    let sparkle = {
-        x: random(width),
-        y: random(height),
-        size: random(1, 6)
-    };
-
-    noStroke();
-    fill(255, 255, 0, random(150, 255));
-    ellipse(sparkle.x, sparkle.y, sparkle.size, sparkle.size);
-    ellipse(mouseX, mouseY, random(2, 6));
+    initMeteors();
 }
 
-class Meteor {
-    constructor() {
-        this.x = random(width);
-        this.y = random(-200, -50);
-        this.speed = random(4, 7);
-        this.w = random(18, 28);
+function initMeteors() {
+    meteors = [];
+    for (let i = 0; i < meteorNum; i++) meteors.push(new Meteor());
+}
 
-        this.origX = this.x;
-        this.origY = this.y;
-
-        this.tailAlpha = 100;
-
-        this.r = random(150, 255);
-        this.g = random(150, 255);
-        this.b = random(150, 255);
-    }
-
-    show() {
-        // head
-        fill(250, 120);
-        ellipse(this.x, this.y, this.w, this.w);
-
-        // small glow
-        fill(250, 80);
-        ellipse(this.x, this.y, this.w / 2, this.w / 2);
-
-        // tail
-        this.tailAlpha = map(this.y, 0, height, 100, 10);
-        fill(this.r, this.g, this.b, this.tailAlpha);
+function Wave() {
+    this.show = function () {
+        vertices.splice(0, vertices.length);
+        push();
+        if (frameCount % 4 === 0) yoff += 0.01;
+        let xoff = 10;
+        colorMode(HSB);
+        fill(248, 71, 150);
         beginShape();
-        vertex(this.x - this.w / 3, this.y - this.w / 3);
-        vertex(this.x + this.w / 3, this.y + this.w / 3);
-        vertex(this.origX + this.w / 3, this.origY + this.w / 3);
-        vertex(this.origX - this.w / 3, this.origY - this.w / 3);
+        for (let x = 0; x < width; x += 17) {
+            let offset = map(noise(xoff, yoff), 0, 1, -60, 60);
+            let y = 520 + offset;
+            vertex(x, y);
+            xoff += 0.03;
+            vertices.push(createVector(x, y));
+        }
+        vertex(width, height);
+        vertex(0, height);
         endShape(CLOSE);
-    }
-
-    move() {
-        this.x -= this.speed * 0.3;
-        this.y += this.speed;
-    }
-
-    reset() {
-        this.x = random(width);
-        this.y = random(-200, -50);
-        this.origX = this.x;
-        this.origY = this.y;
-        this.speed = random(4, 7);
+        pop();
     }
 }
+// ===== BULLETS =====
+function updateBullets() {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        if (!b.active) continue;
+
+        b.y -= b.speed;
+
+
+        fill("#ff0000");
+        ellipse(b.x, b.y, b.size);
+
+        for (let e of enemies) {
+            if (!e.alive || e.absorbing) continue;
+
+
+            let hitRadius = e.size / 2 + b.size / 2 + 5;
+            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
+                console.log("Bullet hit:", e.type);
+                b.active = false;
+                handleHit(e);
+            }
+        }
+
+        if (b.y < 0) b.active = false;
+    }
+}
+
+function handleHit(enemy) {
+    if (!enemy.alive) return;
+    enemy.absorbing = true;
+
+
+    if (enemy.type === "normal" || enemy.type === "yellow") {
+        game2KillCount++;
+        game2Score++;
+    }
+
+
+    if (enemy.type === "yellow") game2BonusTimeMs += 3000;
+
+
+    if (enemy.type === "red") {
+        if (!planeImmune) {
+            game2Lives--;
+            planeImmune = true;
+            planeImmuneTimer = millis();
+            if (game2Lives <= 0) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+        }
+    }
+
+    enemy.alive = false;
+}
+
+
+// ===== METEORS =====
+function checkMeteors() {
+    for (let m of meteors) {
+        m.show();
+        m.move();
+        if (dist(m.x, m.y, planeX, planeY) < 40 && !planeImmune) {
+            game2Lives--;
+            planeImmune = true;
+            planeImmuneTimer = millis();
+            if (game2Lives <= 0) {
+                game2Over = true;
+                game2Stage = "end";
+            }
+            m.y = -200;
+        }
+        if (m.y > height + 120) m.reset();
+    }
+
+
+    if (planeImmune && millis() - planeImmuneTimer > 2000) planeImmune = false;
+}
+// ===== TIME =====
+function checkTime() {
+    let elapsed = millis() - game2StartTime;
+    let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
+    if (remaining <= 0) { game2TimeOver = true; game2Stage = "end"; }
+}
+
+
+// ===== UI =====
+function drawUI() {
+    let elapsed = millis() - game2StartTime;
+    let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
+
+    fill(255, 255, 0);
+    textAlign(CENTER, TOP);
+    textSize(30);
+    textSize(22);
+    text("Time: " + remaining.toFixed(1) + "s", width / 2, 50);
+
+    textAlign(LEFT, TOP);
+    text("Kills: " + game2KillCount + " / 18", 20, 50);
+
+    if (game2KillCount >= 7 && game2KillCount < 18) {
+        push();
+        noStroke();
+        fill(255, 255, 0, 80);
+        ellipse(planeX, planeY - 80, 120, 40);
+        pop();
+        textSize(24);
+        fill(255, 255, 0);
+        textAlign(CENTER, TOP);
+        text("Almost there!", width / 2, 90);
+    }
+
+    if (game2KillCount >= 18) {
+        textSize(32);
+        fill(255, 255, 0);
+        text("Level Clear!", width / 2 - 50, height / 2 - 30);
+    }
+    textAlign(RIGHT, TOP);
+    fill(255, 0, 0);
+    text("Lives: " + game2Lives, width - 20, 50);
+}
+
+
 function runGame3() {
     background(220, 200, 255);
     textSize(50);
     text("Game 3 Start!", width / 2, height / 2);
 }
-
-
 
 
