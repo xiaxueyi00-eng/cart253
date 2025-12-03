@@ -5,6 +5,7 @@
 
 "use strict";
 
+let score1 = 0;
 let flameImg;
 let game2Lives = 2;
 let meteors = [];
@@ -304,9 +305,6 @@ function draw() {
     else if (stage === "game3") runGame3();
 
 
-
-
-
     // ===== GAME1 END SCREEN =====
     if (game1Stage === "end") {
         background(0);
@@ -377,6 +375,7 @@ function runIntroAnimation() {
 
     for (let c of cloudLeft) {
         drawCloudCircle(c.x, cy + c.y, 120);
+
         c.x -= 6;
         if (c.x > -100) opened = false;
     }
@@ -479,32 +478,14 @@ function getCircularButtons(cx, cy, radius) {
     return arr;
 }
 
+
+
 function shootBulletGame1() {
     let b = new Bullet(planeX, planeY - 20, 12, 10);
     b.active = true;
     bullets.push(b);
 }
-function updateBulletsGame1() {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let b = bullets[i];
-        b.y -= b.speed;
-        fill(255, 0, 0);
-        ellipse(b.x, b.y, b.size);
 
-        for (let e of enemies) {
-            if (!e.alive) continue;
-            let hitRadius = e.size / 2 + b.size / 2 + 5;
-            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
-                b.active = false;
-                e.absorbing = true;
-                e.alive = false;
-                game1Score++;
-            }
-        }
-
-        if (b.y < 0 || !b.active) bullets.splice(i, 1);
-    }
-}
 /* ======================================================
    INPUT
 ====================================================== */
@@ -640,6 +621,25 @@ function insideButton(mx, my, bx, by) {
 /* =====================================================
    GAME 1 FUNCTIONS
 ===================================================== */
+let enemy = {
+    x: 100,
+    y: 50,
+    size: 40,
+    type: "normal",
+    alive: true,
+    absorbing: false
+};
+enemies.push(enemy);
+
+let bullet = {
+    x: 120,
+    y: 300,
+    size: 10,
+    speed: 5,
+    toDelete: false
+};
+bullets.push(bullet);
+
 
 function drawPlane1() {
 
@@ -805,21 +805,7 @@ function updateEnemies1() {
     }
 }
 
-/* ---------------- ON HIT ---------------- */
-function handleHit1(e) {
-    game1KillCount++;
-    if (game1KillCount === 8) {
-        planeBoost = true;
-    }
-    e.absorbing = true;
-    game1Score++;
 
-    if (e.type === "yellow") bonusTimeMs += 3000;
-
-    if (e.type === "red") {
-        game1Stage = "end";
-    }
-}
 
 /* ---------------- RESET ---------------- */
 function resetGame1() {
@@ -832,38 +818,86 @@ function resetGame1() {
     timeOver = false;
     gameOver = false;
 }
+function drawGradientBackground() {
+    let ctx = drawingContext;
+    let g = ctx.createLinearGradient(0, 0, 0, height);
+    g.addColorStop(0, "rgba(255, 180, 240, 1)");
+    g.addColorStop(1, "rgba(180, 220, 255, 1)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, width, height);
+}
 
+/* ---------------- GAME1  ---------------- */
+function updateBulletsGame1() {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.move();
+        b.show();
+
+
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            let e = enemies[j];
+            if (!e.alive) continue;
+
+            let d = dist(b.x, b.y, e.x, e.y);
+            if (d < (b.size / 2 + e.size / 2)) {
+                console.log("Bullet hit:", e.type);
+
+
+                if (e.type === "yellow") {
+                    game1Score += 1;
+                    bonusTimeMs += 3000;
+                } else if (e.type === "normal") {
+                    game1Score += 1;
+                } else if (e.type === "red") {
+                    game1Stage = "end";
+                }
+
+
+                e.alive = false;
+
+
+                bullets.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+
+    enemies = enemies.filter(e => e.alive);
+}
+
+function updateEnemies1() {
+    for (let e of enemies) {
+        if (!e.alive) continue;
+
+
+        e.y += e.speed;
+
+        if (e.type === "red") e.x = lerp(e.x, planeX, 0.02);
+
+
+        fill(e.color);
+        ellipse(e.x, e.y, 30, 60);
+        fill(255, 150, 0, 150);
+        ellipse(e.x, e.y + e.size * 0.5, e.size * 0.3, e.size * 0.6);
+
+
+        if (e.y > height + 40) e.alive = false;
+
+
+        if (e.type === "red" && dist(e.x, e.y, planeX, planeY) < planeSize / 2 + e.size / 2) {
+            game1Stage = "end";
+            return;
+        }
+    }
+}
+
+/* ---------------- RUN GAME1 ---------------- */
 function runGame1() {
+    drawGradientBackground();
+    runRainBackground();
 
-    // ---- LEVEL CLEAR ----
-    if (game1KillCount >= 18) {
-        level1Cleared = true;
-        stage = "game2";
-        game2Stage = "start";
-        enemies = [];
-        bullets = [];
-        return;
-    }
-
-    // ---- TIME CALCULATION ----
-    let elapsed = millis() - game1StartTime;
-    let remaining = max(0, (game1Timer * 1000 - elapsed) / 1000);
-
-    if (remaining <= 0 && !gameOver) {
-
-        timeOver = true;
-        gameOver = false;
-        game1Stage = "end";
-    }
-
-    // ---- PLAYER LOSE ----
-    if (playerHit) {
-        gameOver = true;
-        timeOver = false;
-        game1Stage = "end";
-    }
-
-    /* ============= START PAGE ============= */
     if (game1Stage === "start") {
         background(255, 240, 200);
         fill(0);
@@ -883,105 +917,62 @@ function runGame1() {
         return;
     }
 
-    /* ============= END PAGE ============= */
-    if (game1Stage === "end") {
-        background(0);
-        textAlign(CENTER, CENTER);
-
-        textSize(55);
-
-        if (gameOver) {
-            fill("red");
-            text("YOU LOSE!", width / 2, height / 2 - 120);
-
-            fill("white");
-            textSize(40);
-            text("Try Again", width / 2, height / 2 - 50);
-        } else if (timeOver) {
-            fill("yellow");
-            text("TIME'S UP!", width / 2, height / 2 - 120);
-
-            fill("white");
-            textSize(40);
-            text("Try Again", width / 2, height / 2 - 50);
-        }
-
-        fill("white");
-        textSize(32);
-        text("Final Score: " + game1Score, width / 2, height / 2 + 20);
-        text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
-
-        textSize(24);
-        text("Click to Return", width / 2, height / 2 + 150);
-    }
-
-    /* ============= PLAYING ============= */
-
     if (game1Stage === "play") {
-
-        drawGradientBackground();
-        runRainBackground();
+        updateBulletsGame1();
 
 
-
-        if (planeBoost) {
-            planeY = height - 200;
-            planeX = lerp(planeX, mouseX, 0.25);
-        } else {
-            planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, 850);
-
-        }
+        planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, 850);
         drawPlane1();
-
-        // Boss
-        fill(monster.color);
-        ellipse(monster.x, monster.y, monster.size);
-        monster.y += monster.speed;
-        if (monster.y > height + 50) {
-            monster.y = -50;
-            monster.x = random(50, 850);
-        }
-        shootBossBullet();
 
 
         if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
-        updateBullets();
         updateEnemies1();
 
         // UI
         fill(255);
         textSize(22);
         textAlign(LEFT, TOP);
-        text("Kills: " + game1KillCount + " / 18", 20, 50);
+        text("Score: " + game1Score + " / 18", 20, 50);
 
         textAlign(RIGHT, TOP);
         fill(255, 255, 0);
+        let elapsed = millis() - game1StartTime;
+        let remaining = max(0, (game1Timer * 1000 - elapsed) / 1000);
         text("Time: " + remaining.toFixed(1) + "s", width - 20, 50);
 
 
-        if (game1KillCount >= 7 && game1KillCount < 18) {
-            push();
-            noStroke();
-            fill(255, 255, 0, 80);
-            ellipse(planeX, planeY - 80, 120, 40);
-            pop();
-
-            textSize(24);
-            fill(0);
-            textAlign(CENTER, TOP);
-            text("Almost there!", width / 2, 90);
+        if (game1KillCount >= 18) {
+            level1Cleared = true;
+            stage = "game2";
+            game2Stage = "start";
+            enemies = [];
+            bullets = [];
+            return;
         }
 
-
-        if (game1KillCount >= 18) {
-            textSize(32);
-            fill(255, 255, 0);
-            textAlign(CENTER, CENTER);
-            text("Level Clear!", width / 2, height / 2 - 100);
+        if (remaining <= 0) {
+            timeOver = true;
+            gameOver = false;
+            game1Stage = "end";
         }
     }
-}
 
+    if (game1Stage === "end") {
+        background(0);
+        textAlign(CENTER, CENTER);
+        textSize(55);
+        if (gameOver) fill("red");
+        else if (timeOver) fill("yellow");
+        text(gameOver ? "YOU LOSE!" : "TIME'S UP!", width / 2, height / 2 - 120);
+
+        fill("white");
+        textSize(32);
+        text("Final Score: " + game1Score, width / 2, height / 2 + 20);
+        text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
+        textSize(24);
+        text("Click to Return", width / 2, height / 2 + 150);
+    }
+}
 let simpleClouds = [];
 function initSimplePinkClouds() {
     simpleClouds = [];
@@ -995,27 +986,14 @@ function initSimplePinkClouds() {
         });
     }
 }
-
-function drawGradientBackground() {
-    let ctx = drawingContext;
-
-    let g = ctx.createLinearGradient(0, 0, 0, height);
-    ctx.fillRect(0, 0, width, height);
-    g.addColorStop(0, "rgba(255, 180, 240, 1)");
-    g.addColorStop(1, "rgba(180, 220, 255, 1)");
-
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
+/* ---------------- GAME1 子弹 & 敌人逻辑 ---------------- */
 
 
 
 
 
 
-
-
-
+//Game Two
 
 // ===== BULLET CLASS =====
 class Bullet {
@@ -1065,28 +1043,27 @@ function updateBullets() {
 
         for (let enemy of enemies) {
             if (!enemy.alive || enemy.absorbing) continue;
+        }
+    }
 
-            let d = dist(b.x, b.y, enemy.x, enemy.y);
-            if (d < (b.size / 2 + (enemy.size || 20) / 2)) {
-                b.toDelete = true;
-                enemy.hp = (enemy.hp || 1) - 1;
+    let d = dist(b.x, b.y, enemy.x, enemy.y);
+    if (d < (b.size / 2 + (enemy.size || 20) / 2)) {
+        b.toDelete = true;
+        enemy.hp = (enemy.hp || 1) - 1;
 
-                if (enemy.hp <= 0) {
-                    enemy.alive = false;
-                    game2Score += 10;
-                    game2KillCount++;
-                }
-
-                if (enemy.type === "yellow") game2BonusTimeMs += 3000;
-                if (enemy.type === "red") {
-                    game2Over = true;
-                    game2Stage = "end";
-                }
-            }
+        if (enemy.hp <= 0) {
+            enemy.alive = false;
+            game2Score += 10;
+            game2KillCount++;
         }
 
-
-        if (b.toDelete) bullets.splice(i, 1);
+        if (enemy.type === "yellow") game2BonusTimeMs += 3000;
+        if (enemy.type === "red") {
+            gameOver = true;
+            timeOver = false;
+            game1Stage = "end";
+            if (b.toDelete) bullets.splice(i, 1);
+        }
     }
 }
 
