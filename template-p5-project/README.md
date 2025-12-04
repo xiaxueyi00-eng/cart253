@@ -30,8 +30,8 @@ This bit should attribute any code, assets or other elements used taken from oth
 game 1
 https://editor.p5js.org/car1a/sketches/JFTZ8Tzhk
 https://editor.p5js.org/412065342/sketches/r1zDoHS3W
-https://mixkit.co/free-sound-effects/rain/ Thunderstorm and rain loop
-Falling hithttps://mixkit.co/free-sound-effects/space-shooter/
+https://mixkit.co/free-sound-effects/discover/uplifting/
+Falling hit https://mixkit.co/free-sound-effects/space-shooter/
 
 gmae2 https://editor.p5js.org/yy5272/sketches/TpsliXOYw
 https://editor.p5js.org/skgmmt/sketches/BkHuFzCpm

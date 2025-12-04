@@ -4,6 +4,7 @@
  */
 
 "use strict";
+let bgm1;
 let shieldDurationMs = 5000;
 let score1 = 0;
 let flameImg;
@@ -139,11 +140,7 @@ let shootSound;
 function preload() {
     flameImg = loadImage("assets/images/image.png");
 
-    rainSound = loadSound(
-        "assets/sounds/rain.wav",
-        () => console.log("rainSound loaded successfully"),
-        (err) => console.error("rainSound failed to load", err)
-    );
+    bgm1 = loadSound("assets/sounds/game1.wav");
 
     shootSound = loadSound(
         "assets/sounds/shoot.wav",
@@ -579,12 +576,23 @@ function mousePressed() {
         game1Stage = "play";
         game1StartTime = millis();
         resetGame1();
+
         return;
     }
+    if (stage === "game1" && game1Stage === "play") {
 
+        // === Play BGM safely ===
+        if (!bgm1.isPlaying()) {
+            bgm1.setLoop(true);
+            bgm1.play();
+        }
+
+
+    }
     if (stage === "game1" && game1Stage === "end") {
         stage = "rules";
         game1Stage = "start";
+        bgm1.stop();
         return;
     }
 
@@ -913,8 +921,10 @@ function runGame1() {
         background(255, 240, 200);
         fill(0);
         textSize(32);
-        text("Plane Time!", width / 2, height / 2 - 120);
+        text("After-Rain Holiday ", width / 2, height / 2 - 120);
         textSize(20);
+        text(" level one", width / 2, height / 2 - 80);
+
         text("Move mouse to control plane", width / 2, height / 2 - 40);
         text("Press SPACE to shoot", width / 2, height / 2 - 10);
         text("Yellow enemy = +3s", width / 2, height / 2 + 20);
@@ -1219,7 +1229,13 @@ function drawStartScreen() {
     text("GAME 2", width / 2, height / 2 - 120);
 
     textSize(24);
-    text("Rules: Shoot enemies with SPACE.\nKill all 18 to clear the level.", width / 2, height / 2 - 40);
+    text(
+        "Rules:\n" +
+        "• Avoid red enemies—they are deadly\n" +
+        "• You have 3 lives in Level 2\n" +
+        "• Try your best!",
+        width / 2, height / 2 - 40
+    );
 
     // Start 
     fill(255, 204, 255);
@@ -1502,8 +1518,9 @@ function drawUI() {
         text("Level Clear!", width / 2 - 50, height / 2 - 30);
     }
     textAlign(RIGHT, TOP);
-    fill(255, 0, 0);
-    text("Lives: " + game2Lives, width - 20, 50);
+    fill(255);
+    textSize(28);
+    text("Lives: " + "❤️".repeat(game2Lives), width - 20, 50);
 }
 
 // ===== BULLET CLASS=====
@@ -1557,7 +1574,7 @@ class RedSplitEnemy {
 
 
         if (this.generation === 0) {
-            fill("#ff0033");
+            fill("#ad417eff");
             ellipse(this.x, this.y, this.size);
         } else {
             noStroke();
@@ -1680,11 +1697,20 @@ function drawGame3Start() {
     fill(255);
     textSize(50);
     textAlign(CENTER, CENTER);
-    text("GAME 3", width / 2, height / 2 - 80);
+    text("GAME 3", width / 2, height / 2 - 280);
 
     textSize(28);
     fill(200);
-    text("Click to Start", width / 2, height / 2 + 20);
+    text(
+        "Rules:\n" +
+        "• Pink enemies – touching them will deduct 1 point.\n" +
+        "• Blue enemies – touching them will deduct 1 point.\n" +
+        "• Red enemies – instant death.\n\n" +
+        "You have 6 lives.\n" +
+        "The final boss is extremely tough. Be patient and keep shooting.",
+        width / 2,
+        height / 2 - 40
+    );
 }
 function drawPlane3() {
 
@@ -1970,7 +1996,7 @@ class BackgroundMeteor {
     }
 }
 
-// ===== ENEMY =====
+
 
 
 // ===== ENEMY =====
