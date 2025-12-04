@@ -30,14 +30,18 @@ This bit should attribute any code, assets or other elements used taken from oth
 game 1
 https://editor.p5js.org/car1a/sketches/JFTZ8Tzhk
 https://editor.p5js.org/412065342/sketches/r1zDoHS3W
-https://mixkit.co/free-sound-effects/discover/uplifting/
+https://mixkit.co/free-sound-effects/discover/uplifting/ Game show uplifting
 Falling hit https://mixkit.co/free-sound-effects/space-shooter/
+
 
 gmae2 https://editor.p5js.org/yy5272/sketches/TpsliXOYw
 https://editor.p5js.org/skgmmt/sketches/BkHuFzCpm
 https://editor.p5js.org/SihanZhang/sketches/c6Yp_c_XD
 
 
+https://mixkit.co/free-sound-effects/suspense-music/ Synth suspense music
+
+https://mixkit.co/free-stock-music/ambient/ Nature Yoga
 
 
 
