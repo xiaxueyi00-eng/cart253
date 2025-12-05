@@ -7,165 +7,195 @@
 "use strict";
 
 // ====== GLOBAL SOUNDS ======
-let bgm1;
-let bgm2;
-let bgm3;
-let winMusic;
+let bgm1; // Background music of game 1
+let bgm2;// Background music of game 2
+let bgm3; // Background music of game 3
 
+
+let game2SplitEatCount = 0;// Counter for Game2: number of split objects eaten by player
 
 // ====== GLOBAL IMAGES ======
-let flameImg;
+let flameImg;// Stores the flame image used for the player effect
 
 function preload() {
     flameImg = loadImage("assets/images/image.png");
-
+    // Load flame image before the game starts
     bgm1 = loadSound("assets/sounds/game1.wav");
     bgm2 = loadSound("assets/sounds/game2.mp3");
     bgm3 = loadSound("assets/sounds/game3.wav");
-    winMusic = loadSound("assets/sounds/win.wav");
+
 
     shootSound = loadSound(
-        "assets/sounds/shoot.wav",
+        "assets/sounds/shoot.wav",  // Path to shoot sound file
         () => console.log("shootSound loaded successfully"),
         err => console.error("shootSound failed to load", err)
     );
 }
 // ===== GAME1 COMBO SYSTEM =====
-let game1Combo = 0;
-let game1MaxCombo = 0;
-let game1ComboTimer = 0;
-let game1ComboDuration = 2500; // 2.5 seconds
-let comboFlashAlpha = 0;
-let comboScale = 1;
+let game1Combo = 0; // Current combo count
+let game1MaxCombo = 0; // Highest combo achieved
+let game1ComboTimer = 0; // Timer that tracks combo duration
+let game1ComboDuration = 2500;   // Maximum time (ms) to continue a combo
+let comboFlashAlpha = 0;  // Flash visual effect transparency
+let comboScale = 1; // Combo number scaling animation
 
-let shieldDurationMs = 5000;
-let score1 = 0;
-let game2Lives = 3;
-let meteors = [];
-let stars2 = [];
-let meteorNum = 4;
-let starNum = 100;
-let wave;
-let yoff = 0;
-let vertices = [];
+let shieldDurationMs = 5000;  // Duration of shield (5 seconds)
 
-let game2LastBulletTime = 0;
-let playerHit = false;
+let score1 = 0; // Game1 score counter
+let game2Lives = 3; // Game2 player health
+let meteors = [];// Array storing meteor objects for Game2
+let stars2 = []; // Background stars for Game2
+let meteorNum = 4;    // Initial meteor count
+let starNum = 100; // Number of stars in Game2 background
+let wave; // Variable for wave animation (Game2)
+let yoff = 0; // Noise offset
+let vertices = []; // Stores wave shape vertices
+
+
+let playerHit = false;           // Tracks if player was recently h
 // ===== METEOR SYSTEM FOR GAME 2 =====
+let game2LastBulletTime = 0;     // Timestamp of last bullet in Game2
+let planeSpeed = 1;              // Speed of Game2 player movement
+let bossBullets = []; // Bullets fired by the Game2 boss
+let cloudLayers = [];// Decorative clouds for background motion
+let level1Cleared = false;    // Whether Game2 level 1 is completed
+let level2Cleared = false;      // Whether Game2 level 2 is completed
 
-let planeSpeed = 1;
 
 
-let bossBullets = [];
-let cloudLayers = [];
-let level1Cleared = false;
-let level2Cleared = false;
-// ===== Game1 Monster =====
-let monster = {
-    x: 450,
-    y: -60,
-    size: 80,
-    speed: 3,
-    color: "#8800ff"
-};
 
-let game1KillCount = 0;
 let game3KillCount = 0;
+// Number of enemies killed in Game 3
+
 // ===== GLOBAL =====
 let stage = "intro";  // intro → sunAppear → rules → game1
 let bgY1 = 0;
-let bgY2 = -900;
-
+let bgY2 = -900;// Background scroll positions (used for moving background layers)
+let game1KillCount = 0;// Number of enemies killed in Game 1
 // ===== BULLET COOLDOWN =====
-let lastBulletTime = 0;
-let bulletCooldown = 500; // ms
+let lastBulletTime = 0;// Records when the last bullet was fired (used for cooldown)
+let bulletCooldown = 500; // Minimum time interval between shots (500ms = 0.5 seconds)
 
 // ===== GAME1 VARS =====
-let game1Timer = 60;
-let game1StartTime = 0;
-let elapsed = 0;
-let remaining = game1Timer
+let game1Timer = 60;// Game 1 countdown timer in seconds
+let game1StartTime = 0;// Records the timestamp when Game 1 starts
+let elapsed = 0;// Time passed since Game 1 started
+let remaining = game1Timer// Remaining time to display
 let game1Stage = "start";  // start → play → end
-let game1Score = 0;
-let game1BestScore = 0;
+let game1Score = 0;// Current score of Game 1
+let game1BestScore = 0;// Highest score achieved by the player in Game 1
 let baseTimeMs = 60000;
+// Base time limit in milliseconds (60 seconds)
+
 let bonusTimeMs = 0;
+// Extra time gained by hitting yellow enemies
 
 let timeOver = false;
+// True if the countdown reaches 0
+
 let gameOver = false;
+// True if player dies from a red enemy
+
 /* ===== GAME 2 VARS ===== */
 // ===== GLOBAL VARIABLES =====
 
-let sparkles = [];
-let enemies = [];
-let bullets = [];
-
+let sparkles = [];// Sparkle effects used in Game 2 background animation
+let enemies = [];// Array storing all enemies in Game 1 and Game 2
+let bullets = [];// Array for all bullets fired by the player (shared system)
 let planeX, planeY;
-let planeBoost = false;
+// Player plane position (shared between Game 1 and Game 2)
 
+let planeBoost = false;
+// Used for special speed effects (not currently implemented)
 
 let planeImmune = false;
+// Temporary invincibility after getting hit in Game 2
+
 let planeImmuneTimer = 0;
+// Timestamp when invincibility started
+
 let game2StartTime;
+// Timestamp when Game 2 begins
+
 let game2BaseTimeMs = 60000;
+// Base time for Game 2 (60 seconds)
+
 let game2BonusTimeMs = 0;
+// Extra time added for hitting yellow enemies
 
 let game2Score = 0;
+// Current score in Game 2
+
 let game2BestScore = 0;
+// Highest score for Game 2
+
 let game2KillCount = 0;
+// Number of enemies killed in Game 2 (also used for level progress)
+
 let game2EnemyCount = 0;
+// Total number of enemies spawned so far (not killed)
 
 let game2EnemySpawnInterval = 60;
-let game2Stage = "start";
-let game2Over = false;
-let game2TimeOver = false;
+// Spawn a new enemy every 60 frames (~1 second)
 
+let game2Stage = "start";
+// "start" → title screen
+// "play" → gameplay
+// "end" → result screen
+
+let game2Over = false;
+// True when player dies (lives reach 0)
+
+let game2TimeOver = false;
+// True when countdown reaches 0
 
 let starDensity2 = 170 / (900 * 900);
 function setupStars2() {
 
-    stars2 = [];
-    for (let i = 0; i < 100; i++) {
+    stars2 = []; // Reset the star array before generating new stars
+    for (let i = 0; i < 100; i++) {  // Create exactly 100 stars for the animated starfield
         stars2.push({
-            x: random(width),
-            y: random(height),
-            size: random(1, 3),
-            update: function () {
+            x: random(width),  // Random horizontal position across the canvas
+            y: random(height),    // Random vertical position
+            size: random(1, 3),   // Random star size (small dots for a natural star effect)
+            update: function () {   // Random star size (small dots for a natural star effect)
                 this.y += 0.5;
                 if (this.y > height) this.y = 0;
             },
             display: function () {
+                // Draw the star as a small white dot
                 fill(255);
                 ellipse(this.x, this.y, this.size);
             }
         });
     }
-
-
     sparkles = [];
 }
 
 // plane
 let planeSize = 40;
+// Player plane size
 
 // bullets & enemies
-
 let enemyCount = 0;
+// How many enemies spawned (Game1)
+
 let enemySpawnInterval = 40;
+// Spawn enemy every 40 frames
 
 let speedLines = [];
+// Fast wind-line effects
 
 let timedMonsters = [];
+// Time-triggered monsters (unused placeholder)
 
-
-// --- Game2 bonus counter (number of yellow enemies collected) ---
+// Game2 bonus (yellow enemies eaten)
 let game2BonusEatCount = 0;
 
-// --- Game2 falling rain-type enemy (triggered after enough bonuses) ---
+// Game2 special rain enemy
 let game2RainEnemy = null;
 
-
-// ====== SOUNDS ======
+// Sounds
 let rainSound;
 let shootSound;
 
@@ -175,28 +205,24 @@ function playWinMusic() {
     if (bgm2 && bgm2.isPlaying()) bgm2.stop();
     if (bgm3 && bgm3.isPlaying()) bgm3.stop();
 
-    if (!winMusic.isPlaying()) {
-        winMusic.setLoop(false);
-        winMusic.play();
-    }
 }
 // ====== SETUP ======
 
 function setup() {
-    createCanvas(900, 900);
-    rectMode(CENTER);
-    textAlign(CENTER, CENTER);
-    stars = [];
-    initPrettyStormClouds();
+    createCanvas(900, 900); //Game canvans
+    rectMode(CENTER);// Draw rectangles from center
+    textAlign(CENTER, CENTER);// Center text alignment
+    stars = [];// Reset stars array
+    initPrettyStormClouds();// Setup intro clouds
 
     planeX = width / 2;
     planeY = height - 100;
-
+    // Initial plane position
     meteors.push(new Meteor(100, 0, 5));
     meteors.push(new Meteor(300, -50, 3));
-
+    // Add two preset meteors
     for (let i = 0; i < meteorNum; i++) {
-        meteors.push(new Meteor());
+        meteors.push(new Meteor());  // Add random meteors
     }
 }
 
@@ -205,24 +231,30 @@ function drawStarBackground2() {
 
     noStroke();
     for (let s of stars2) {
-        s.brightness = random(100, 255);
+        s.brightness = random(100, 255); // Flickering brightness effect
+        // Draw star
         fill(s.brightness);
         ellipse(s.x, s.y, s.size);
     }
 }
 // =================== RAIN BACKGROUND ===================
 let a = 0;
-let b = 0;
-let speed = 0.5;
-let offY = 0;
-let Alpha = 15;
+// Horizontal offset for rain animation
 
+let b = 0;
+// Secondary offset for layered rain
+
+let speed = 0.5;
+// Rain movement speed
+
+let offY = 0;
+// Noise offset for water wave effect
+
+let Alpha = 15;
+// Transparency value for rain graphics
 
 function runRainBackground() {
-
-
-
-    // Rain
+    // First layer of rain (long streaks)
     for (let i = 0; i < width; i += 20) {
         let y = random(-height, height);
         stroke(255, 100);
@@ -230,67 +262,69 @@ function runRainBackground() {
     }
 
     noStroke();
-    a += speed;
+    a += speed;// Move offset a
     if (a > width) a = -400;
 
-    b += speed / 2;
+    b += speed / 2; // Move offset b slower
     if (b > width) b = -200;
 
-    // Rain
+    // Second layer of rain (short streaks + splashes)
     for (var i = 0; i < width; i += 20) {
         var y = random(-height, height);
         stroke(255, 50);
-        line(i, 0, i, y - 100);
+        line(i, 0, i, y - 100); // Light rain streak
 
         var Y2 = random(height * 0.6, height);
         strokeWeight(2);
         stroke(180, 210, 255, 40);
         strokeWeight(2);
-        ellipse(i, Y2, 45, 4);
+        ellipse(i, Y2, 45, 4);// Ground splash
     }
 
     // Water wave
     noStroke();
 
     offY += 0.003;
-    var Y = noise(offY) * 1000;
+    var Y = noise(offY) * 1000; // Noise-based wave offset (used elsewhere)
 }
 // =========Clouds ========= //
 
 
 function initPrettyStormClouds() {
+    // Reset cloud layer list
     cloudLayers = [];
     for (let i = 0; i < 4; i++) {
         cloudLayers.push({
-            y: random(80, 300),
-            speed: random(0.2, 1.0),
-            noiseOffset: random(1000),
-            color: color(60, 60, 80, random(150, 220)),
-            scale: random(1.2, 2.0)
+            y: random(80, 300), // Vertical position of this cloud layer
+            speed: random(0.2, 1.0), // Horizontal drifting speed
+            noiseOffset: random(1000),// Noise seed for floating animation
+            color: color(60, 60, 80, random(150, 220)),// Cloud color with varying transparency
+            scale: random(1.2, 2.0)// Size multiplier for each cloud layer
         });
     }
 }
 
 function drawPrettyStormClouds() {
     noStroke();
-
+    // Clouds have soft edges
     for (let c of cloudLayers) {
 
-
+        // Vertical floating motion using sine wave
         let floatY = c.y + sin(frameCount * 0.01 + c.noiseOffset) * 6;
-
+        // Draw 3 layered cloud ellipses for depth
         for (let i = 0; i < 3; i++) {
             let r = 160 * c.scale * (1 - i * 0.2);
             let alpha = 70 - i * 20;
-
+            // Inner layers are more transparent
             fill(255, 240, 255, alpha);
             ellipse(c.x, floatY, r * 2, r * 1.2);
         }
 
-
+        // Horizontal drifting motion
         c.x += sin(frameCount * 20 + c.noiseOffset) * 20;
 
 
+        // Wrap clouds horizontally across the screen
         if (c.x > width + 200) c.x = -200;
         if (c.x < -200) c.x = width + 200;
     }
@@ -324,26 +358,42 @@ let stars = [];
 
 function draw() {
     background(204, 229, 255);
+    // Default sky-blue background
 
     if (stage === "intro") runIntroAnimation();
+    // Opening cloud animation
+
     else if (stage === "sunAppear") runSunAppear();
+    // Sun expansion animation
+
     else if (stage === "rules") runRulesScreen();
+    // Main menu with 3 game buttons
+
     else if (stage === "game1") runGame1();
+    // Run Game 1
+
     else if (stage === "game2") runGame2();
+    // Run Game 2
+
     else if (stage === "game3") runGame3();
+    // Run Game 3
 
 
     // ===== GAME1 END SCREEN =====
     if (game1Stage === "end") {
+
         background(0);
+
+
+        textAlign(CENTER, CENTER);
+
         textSize(55);
-        if (gameOver) fill("red");
-        else if (timeOver) fill("yellow");
+        if (gameOver) fill("red"); // Red = died by enemy
+        else if (timeOver) fill("yellow");// Yellow = time ran out
         text(gameOver ? "YOU LOSE!" : "TRY AGAIN?", width / 2, height / 2 - 120);
 
         fill("white");
         textSize(40);
-        text("Try Again", width / 2, height / 2 - 50);
 
         textSize(32);
         text("Final Score: " + game1Score, width / 2, height / 2 + 20);
@@ -352,14 +402,13 @@ function draw() {
         textSize(24);
         text("Click to Return", width / 2, height / 2 + 150);
     }
-
     // ===== GAME2 END SCREEN =====
     if (stage === "game2" && game2Stage === "end") {
         background(0);
         textSize(55);
         textAlign(CENTER, CENTER);
-        if (game2Over) fill("red");
-        else if (game2TimeOver) fill("yellow");
+        if (game2Over) fill("red"); // Player died → red text
+        else if (game2TimeOver) fill("yellow"); // Time up → yellow text
         text(game2Over ? "YOU LOSE!" : "TIME'S UP!", width / 2, height / 2 - 120);
 
         fill("white");
@@ -397,73 +446,78 @@ function drawCloudCircle(cx, cy, radius) {
 
 /* ---------------- INTRO CLOUD ANIMATION ---------------- */
 function runIntroAnimation() {
-    let cx = width / 2;
-    let cy = height / 2;
-    let opened = true;
+    let cx = width / 2; // Screen center X
 
+    let cy = height / 2; // Screen center Y
+    let opened = true; // Tracks if both cloud groups have fully moved away
+    // Move left-side clouds to the left
     for (let c of cloudLeft) {
         drawCloudCircle(c.x, cy + c.y, 120);
 
-        c.x -= 6;
-        if (c.x > -100) opened = false;
+        c.x -= 6;    // Slide left
+        if (c.x > -100) opened = false; // If still on screen, not opened yet
     }
+    // Move right-side clouds to the right
     for (let c of cloudRight) {
         drawCloudCircle(c.x, cy + c.y, 120);
-        c.x += 6;
-        if (c.x < width + 100) opened = false;
+        c.x += 6;    // Slide right
+        if (c.x < width + 100) opened = false;  // If still on screen, not opened yet
     }
-
+    // When both sides are fully open → go to next stage
     if (opened) stage = "sunAppear";
 }
 
 /* ---------------- SUN APPEAR ---------------- */
 function runSunAppear() {
-    let cx = width / 2;
-    let cy = height / 2;
+    let cx = width / 2;    // Center X
+    let cy = height / 2;  // Center Y
 
-    glowSize += glowGrow;
+    glowSize += glowGrow;    // Pulsing glow animation
     if (glowSize > 60 || glowSize < 0) glowGrow *= -1;
 
     drawPinkGradientCircle(cx, cy, sunRadius);
 
-    if (sunRadius < 160) sunRadius += 5;
-    else stage = "rules";
+    if (sunRadius < 160) sunRadius += 5;// Grow the sun each frame
+    else stage = "rules"; // When fully grown, go to the rules menu
 }
 
 /* ---------------- PINK SUN ---------------- */
 function drawPinkGradientCircle(cx, cy, r) {
-    let ctx = drawingContext;
-    let g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+    let ctx = drawingContext;// Access the canvas 2D context
+    let g = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r); // Radial gradient from center → edge
     g.addColorStop(0, "rgba(255, 230, 255, 1)");
     g.addColorStop(0.5, "rgba(242, 203, 242, 1)");
     g.addColorStop(1, "rgba(250, 192, 241, 1)");
+    // Soft pink gradient steps
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, TWO_PI);
-    ctx.fill();
+    ctx.arc(cx, cy, r, 0, TWO_PI); // Draw a circle with radius r
+    ctx.fill(); // Render the gradient circle
 }
 
 /* ---------------- RULES SCREEN ---------------- */
 function runRulesScreen() {
     let cx = width / 2;
     let cy = height / 2;
+    // Screen center
 
-    drawPinkGradientCircle(cx, cy, 200);
+    drawPinkGradientCircle(cx, cy, 200);    // Big pink circle background
 
     fill(0);
     textSize(36);
     textAlign(CENTER, CENTER);
     text("Game Time", cx, cy - 200);
 
-    drawCircularButtons(cx, cy, 300);
+    drawCircularButtons(cx, cy, 300);// Draw 3 game-select buttons around a circle
 }
 
 /* ---------------- FLOWER BUTTON ---------------- */
 function drawButton(x, y, label) {
     noStroke();
     fill(255, 153, 204);
-
+    // Petal color
     let d = 40, s = 45;
+    // Draw 6 flower petals around the center
     ellipse(x, y - d, s + 10, s);
     ellipse(x, y + d, s + 10, s);
     ellipse(x - d, y + 15, s, s);
@@ -473,57 +527,78 @@ function drawButton(x, y, label) {
 
     fill(255, 204, 229);
     ellipse(x, y, 80, 80);
-
+    // Button center circle
     fill(0);
     textSize(20);
     text(label, x - 3, y);
+    // Button label ("Game 1", etc.)
 }
 
 function drawCircularButtons(cx, cy, radius) {
     let display = ["Game 1", "Game 2", "Game 3"];
     let values = ["game1", "game2", "game3"];
+    // Labels and identifiers
 
     for (let i = 0; i < 3; i++) {
         let ang = TWO_PI / 3 * i - PI / 2;
+        // Divide circle into 3 equal angles
         let bx = cx + cos(ang) * radius;
         let by = cy + sin(ang) * radius;
-        drawButton(bx, by, display[i]);
+        // Button position on the circle
+        drawButton(bx, by, display[i]); // Draw one flower button
     }
 }
 
 /* ---------------- BUTTON INFO (FOR CLICK) ---------------- */
 function getCircularButtons(cx, cy, radius) {
     let values = ["game1", "game2", "game3"];
+    // Button identifiers
+
     let arr = [];
+    // Will store button data (label + position)
+
     for (let i = 0; i < 3; i++) {
         let ang = TWO_PI / 3 * i - PI / 2;
+        // Angle position around a circle
+
         arr.push({
             label: values[i],
+            // Which game this button represents
+
             x: cx + cos(ang) * radius,
+            // Button X position on circle
+
             y: cy + sin(ang) * radius
+            // Button Y position on circle
         });
     }
-    return arr;
-}
 
+    return arr;
+    // Used in mousePressed() to detect clicks
+}
 
 
 function shootBulletGame1() {
     let b = new Bullet(planeX, planeY - 20, 12, 10);
-    b.active = true;
-    bullets.push(b);
-}
+    // Create a bullet slightly above the plane
 
+    b.active = true;
+    // Mark bullet as active
+
+    bullets.push(b);
+    // Add to bullet list
+}
 /* ======================================================
    INPUT
 ====================================================== */
 function keyPressed() {
     // ===== Game1 =====
     if (stage === "game1" && game1Stage === "play") {
+        // Shoot if space pressed + cooldown ready
         if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
             shootBulletGame1();
             lastBulletTime = millis();
-
+            // Start BGM1 if not playing
             if (!bgm1.isPlaying()) {
                 bgm1.setLoop(true);
                 bgm1.play();
@@ -532,8 +607,9 @@ function keyPressed() {
         }
     }
 
-
+    // ===== Game2 =====
     if (stage === "game2") {
+        // Press space → start game
         if (game2Stage === "start") {
             if (key === ' ') {
                 game2Stage = "play";
@@ -542,35 +618,22 @@ function keyPressed() {
             }
         }
         else if (game2Stage === "play") {
+            // Shoot if cooldown ready
             if (key === ' ' && (!game2LastBulletTime || millis() - game2LastBulletTime > bulletCooldown)) {
-
                 bullets.push(new Bullet(planeX, planeY - 20, 7));
-
                 game2LastBulletTime = millis();
-
-
                 if (shootSound) shootSound.play();
             }
         }
         else if (game2Stage === "end") {
-            if (key === ' ') {
-                game2Stage = "start";
-            }
+            // Press space → restart Game2
+            if (key === ' ') game2Stage = "start";
         }
     }
+
+    // ===== Game3 =====
     if (stage === "game3" && game3Stage === "play") {
-        if (key === ' ' && millis() - lastBulletTime3 > 200) {
-            shootBulletGame3();
-            lastBulletTime3 = millis();
-            if (shootSound) shootSound.play();
-        }
-    }
-    if (key === ' ' && millis() - lastBulletTime > bulletCooldown) {
-        shootBulletGame1();
-        lastBulletTime = millis();
-        if (shootSound) shootSound.play();
-    }
-    if (stage === "game3" && game3Stage === "play") {
+        // Shoot if cooldown ready
         if (key === ' ' && millis() - lastBulletTime3 > 200) {
             shootBulletGame3();
             lastBulletTime3 = millis();
@@ -583,22 +646,22 @@ function keyPressed() {
 
 function mousePressed() {
 
-    // ===== RULES PAGE（）=====
+    // ===== RULES PAGE — main menu via 3 flowers =====
     if (stage === "rules") {
         let buttons = getCircularButtons(450, 450, 300);
         for (let b of buttons) {
             if (insideButton(mouseX, mouseY, b.x, b.y)) {
-                stage = b.label;
 
                 if (b.label === "game1") {
+                    stage = "game1";
                     game1Stage = "start";
                     resetGame1();
-                }
-                if (b.label === "game2") {
+                } else if (b.label === "game2") {
+                    stage = "game2";
                     game2Stage = "start";
                     setupGame2();
-                }
-                if (b.label === "game3") {
+                } else if (b.label === "game3") {
+                    stage = "game3";
                     game3Stage = "start";
                     initGame3();
                 }
@@ -607,66 +670,151 @@ function mousePressed() {
         }
     }
 
-    // ===================== GAME 1 =====================
+
+    // ===== GAME 1 — Start Page Buttons =====
     if (stage === "game1" && game1Stage === "start") {
-        game1Stage = "play";
-        game1StartTime = millis();
-        resetGame1();
+
+        let startX = width / 2;
+        let startY = height / 2 + 140;
+        let startW = 220, startH = 80;
+
+        let backX = width / 2;
+        let backY = height / 2 + 240;
+        let backW = 200, backH = 60;
+
+        // Back to menu
+        if (
+            mouseX > backX - backW / 2 && mouseX < backX + backW / 2 &&
+            mouseY > backY - backH / 2 && mouseY < backY + backH / 2
+        ) {
+            stage = "rules";
+            game1Stage = "start";
+            return;
+        }
+
+        // Start
+        if (
+            mouseX > startX - startW / 2 && mouseX < startX + startW / 2 &&
+            mouseY > startY - startH / 2 && mouseY < startY + startH / 2
+        ) {
+            game1Stage = "play";
+            game1StartTime = millis();
+            resetGame1();
+            return;
+        }
 
         return;
     }
 
-    if (stage === "game1" && game1Stage === "play") {
 
-
-
-
-    }
+    // ===== GAME 1 — End Page =====
     if (stage === "game1" && game1Stage === "end") {
         stage = "rules";
         game1Stage = "start";
-        bgm1.stop();
+        if (bgm1?.isPlaying()) bgm1.stop();
         return;
     }
 
-    // ===================== GAME 2 =====================
+
+
+    // =====================================================
+    // =============== GAME 2  — Start Buttons =============
+    // =====================================================
     if (stage === "game2" && game2Stage === "start") {
-        game2Stage = "play";
-        game2StartTime = millis();
-        setupGame2();
 
+        let startX = width / 2;
+        let startY = height / 2 + 120;
+        let startW = 200, startH = 70;
 
-        if (bgm2 && !bgm2.isPlaying()) {
-            bgm2.setLoop(true);
-            bgm2.play();
+        let backX = width / 2;
+        let backY = height / 2 + 210;
+        let backW = 220, backH = 70;
+
+        // Back to menu
+        if (
+            mouseX > backX - backW / 2 && mouseX < backX + backW / 2 &&
+            mouseY > backY - backH / 2 && mouseY < backY + backH / 2
+        ) {
+            stage = "rules";
+            game2Stage = "start";
+            return;
+        }
+
+        // Start Game 2
+        if (
+            mouseX > startX - startW / 2 && mouseX < startX + startW / 2 &&
+            mouseY > startY - startH / 2 && mouseY < startY + startH / 2
+        ) {
+            game2Stage = "play";
+            game2StartTime = millis();
+            setupGame2();
+
+            if (bgm2 && !bgm2.isPlaying()) {
+                bgm2.setLoop(true);
+                bgm2.play();
+            }
+            return;
         }
 
         return;
     }
+
+
+    // ===== GAME 2 — End Page =====
     if (stage === "game2" && game2Stage === "end") {
         resetGame2();
         stage = "rules";
-        if (bgm2.isPlaying()) bgm2.stop();
-
+        if (bgm2?.isPlaying()) bgm2.stop();
         return;
     }
 
-    // ===================== GAME 3 =====================
-    // START → PLAY
+
+
+    // =====================================================
+    // =============== GAME 3 — Start Buttons =============
+    // =====================================================
     if (stage === "game3" && game3Stage === "start") {
-        game3Stage = "play";
-        game3StartTime = millis();
-        // Play BGM3
-        if (!bgm3.isPlaying()) {
-            bgm3.setLoop(true);
-            bgm3.play();
+
+        let startX = width / 2;
+        let startY = height / 2 + 160;
+        let startW = 220, startH = 70;
+
+        let backX = width / 2;
+        let backY = height / 2 + 250;
+        let backW = 220, backH = 70;
+
+        // Back to menu
+        if (
+            mouseX > backX - backW / 2 && mouseX < backX + backW / 2 &&
+            mouseY > backY - backH / 2 && mouseY < backY + backH / 2
+        ) {
+            stage = "rules";
+            game3Stage = "start";
+            return;
         }
+
+        // Start Game 3
+        if (
+            mouseX > startX - startW / 2 && mouseX < startX + startW / 2 &&
+            mouseY > startY - startH / 2 && mouseY < startY + startH / 2
+        ) {
+            game3Stage = "play";
+            game3StartTime = millis();
+
+            if (!bgm3.isPlaying()) {
+                bgm3.setLoop(true);
+                bgm3.play();
+            }
+            return;
+        }
+
         return;
     }
 
-    // WIN / LOSE →
+
+    // ===== GAME 3 — End Page =====
     if (stage === "game3" && (game3Stage === "win" || game3Stage === "lose")) {
-        if (bgm3.isPlaying()) bgm3.stop();
+        if (bgm3?.isPlaying()) bgm3.stop();
         initGame3();
         game3Stage = "start";
         stage = "rules";
@@ -677,16 +825,17 @@ function mousePressed() {
 // ---------------- HIT DETECTION ---------------- */
 function insideButton(mx, my, bx, by) {
     return (
-        mx > bx - 130 &&
-        mx < bx + 130 &&
-        my > by - 30 &&
-        my < by + 30
+        mx > bx - 130 &&   // inside left boundary
+        mx < bx + 130 &&   // inside right boundary
+        my > by - 30 &&    // inside top boundary
+        my < by + 30       // inside bottom boundary
     );
 }
 
 /* =====================================================
    GAME 1 FUNCTIONS
 ===================================================== */
+// A sample enemy object (used as an initial placeholder)
 let enemy = {
     x: 100,
     y: 50,
@@ -695,8 +844,8 @@ let enemy = {
     alive: true,
     absorbing: false
 };
-enemies.push(enemy);
-
+enemies.push(enemy);// Add this enemy to the enemy list
+// A sample bullet object (also a placeholder)
 let bullet = {
     x: 120,
     y: 300,
@@ -704,16 +853,14 @@ let bullet = {
     speed: 5,
     toDelete: false
 };
-bullets.push(bullet);
+bullets.push(bullet);// A sample bullet object (also a placeholder)
 
 
 function drawPlane1() {
-
-
     imageMode(CENTER);
-    image(flameImg, planeX, planeY + 80, 80, 70);
+    image(flameImg, planeX, planeY + 80, 80, 70); // Flame image under the plane
     fill(30, 60, 140);
-    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);
+    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);  // Main plane body
 
     // ---------------- PLANE ----------------
     fill(30, 60, 140);
@@ -722,6 +869,7 @@ function drawPlane1() {
         planeX + planeSize, planeY + 25,
         planeX, planeY - 30
     );
+    // Large triangle wing/body
 
     // ---------------- PLANE ----------------
     fill(30, 60, 140);
@@ -730,6 +878,7 @@ function drawPlane1() {
         planeX + planeSize / 2, planeY + 35,
         planeX, planeY - 30
     );
+    // Smaller front triangle
 }
 
 
@@ -737,22 +886,22 @@ function drawPlane1() {
 /* ---------------- ENEMIES ---------------- */
 function spawnEnemy1() {
     enemyCount++;
-
+    // Increase enemy count (difficulty uses this)
     let difficulty = min(0.6, enemyCount * 0.01);
-
+    // Difficulty slowly increases (max 60%)
 
     let r = random();
 
     let type = "normal";
     let color = "#000";
 
-
+    // Every 5 enemies → yellow bonus enemy
     if (enemyCount % 5 === 0) {
         type = "yellow";
         color = "#ffe600";
     }
 
-
+    // Random chance enemy becomes RED (dangerous)
     if (r < difficulty) {
         type = "red";
         color = "#ff0033";
@@ -781,60 +930,22 @@ function drawSpeedLines() {
         });
     }
 
-
+    // 40% chance each frame to add a new streak
     for (let i = speedLines.length - 1; i >= 0; i--) {
         let l = speedLines[i];
 
         stroke(255, 255, 255, l.alpha);
         strokeWeight(2);
         line(l.x, l.y, l.x, l.y + l.length);
-
+        // Draw streak
         l.y += l.speed;
-
-        if (l.y > height + 20) speedLines.splice(i, 1);
+        // Move downward
+        if (l.y > height + 20) speedLines.splice(i, 1); // Remove when off-screen
     }
 
     noStroke();
 }
-function shootBossBullet() {
 
-    // Boss fires a bullet every 120 frames
-    if (frameCount % 120 === 0) {
-
-        // Give the boss a horizontal dash movement
-        monster.xSpeed = random([-10, -7, 7, 10]);
-        monster.x += monster.xSpeed;
-
-        // Bounce back when reaching edges
-        if (monster.x < 50 || monster.x > 850) {
-            monster.xSpeed *= -1;
-        }
-
-        // Create a new bullet
-        bossBullets.push({
-            x: monster.x,
-            y: monster.y + monster.size / 2,
-            size: 12,
-            speed: 8
-        });
-    }
-
-    // Draw and update boss bullets
-    for (let b of bossBullets) {
-        fill(180, 80, 255);   // purple bullet
-        b.y += b.speed;
-        ellipse(b.x, b.y, b.size);
-
-        // Hit detection → Game Over
-        let d = dist(b.x, b.y, planeX, planeY);
-        if (d < b.size / 2 + planeSize / 2) {
-            game1Stage = "end";
-        }
-    }
-
-    // Remove bullets that leave the screen
-    bossBullets = bossBullets.filter(b => b.y < height + 50);
-}
 function updateEnemies1() {
     for (let e of enemies) {
         if (!e.alive) continue;
@@ -848,8 +959,7 @@ function updateEnemies1() {
             game1Stage = "end";
             return;
         }
-
-
+        // Absorbing motion (yellow being sucked)
         if (e.absorbing) {
             e.x = lerp(e.x, planeX, 0.2);
             e.y = lerp(e.y, planeY, 0.2);
@@ -858,16 +968,17 @@ function updateEnemies1() {
             }
             continue;
         }
-
+        // Normal movement
         e.y += e.speed;
         if (e.type === "red") {
             e.x = lerp(e.x, planeX, 0.02);
         }
+        // Draw enemy body
         fill(e.color);
         ellipse(e.x, e.y, 30, 60);
-        fill(255, 150, 0, 150);
+        fill(255, 150, 0, 150);  // Glow / tail
         ellipse(e.x, e.y + e.size * 0.5, e.size * 0.3, e.size * 0.6);
-
+        // Remove if moved off-screen
         if (e.y > height + 40) e.alive = false;
     }
 }
@@ -876,14 +987,14 @@ function updateEnemies1() {
 
 /* ---------------- RESET ---------------- */
 function resetGame1() {
-    game1Score = 0;
-    bonusTimeMs = 0;
-    bullets = [];
-    enemies = [];
-    enemyCount = 0;
-    game1KillCount = 0;
-    timeOver = false;
-    gameOver = false;
+    game1Score = 0;        // Reset score
+    bonusTimeMs = 0;       // Reset bonus time
+    bullets = [];          // Clear bullets
+    enemies = [];          // Clear enemies
+    enemyCount = 0;        // Reset enemy counter
+    game1KillCount = 0;    // Reset kill count
+    timeOver = false;      // Timer state
+    gameOver = false;      // Death state
 }
 function drawGradientBackground() {
     let ctx = drawingContext;
@@ -891,17 +1002,17 @@ function drawGradientBackground() {
     g.addColorStop(0, "rgba(255, 180, 240, 1)");
     g.addColorStop(1, "rgba(180, 220, 255, 1)");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, width, height); // Full-screen gradient
 }
 
 /* ---------------- GAME1  ---------------- */
 function updateBulletsGame1() {
     for (let i = bullets.length - 1; i >= 0; i--) {
         let b = bullets[i];
-        b.move();
-        b.show();
+        b.move();   // Move bullet
+        b.show();   // Draw bullet
 
-
+        // Check collision against every enemy
         for (let j = enemies.length - 1; j >= 0; j--) {
             let e = enemies[j];
             if (!e.alive) continue;
@@ -914,7 +1025,9 @@ function updateBulletsGame1() {
                 game1ComboTimer = millis();
                 if (game1Combo > game1MaxCombo) game1MaxCombo = game1Combo;
 
-
+                // ===== KILL COUNT HERE =====
+                game1KillCount++;
+                // Enemy scoring
                 if (e.type === "yellow") {
                     game1Score += 1;
                     bonusTimeMs += 3000;
@@ -925,16 +1038,14 @@ function updateBulletsGame1() {
                 }
 
 
-                e.alive = false;
-
-
-                bullets.splice(i, 1);
+                e.alive = false;           // Remove enemy
+                bullets.splice(i, 1);      // Remove bullet
                 break;
             }
         }
     }
 
-
+    // Remove all dead enemies
     enemies = enemies.filter(e => e.alive);
 }
 
@@ -943,20 +1054,20 @@ function updateEnemies1() {
         if (!e.alive) continue;
 
 
-        e.y += e.speed;
+        e.y += e.speed;   // Move downward
 
         if (e.type === "red") e.x = lerp(e.x, planeX, 0.02);
 
-
+        // Draw enemy
         fill(e.color);
         ellipse(e.x, e.y, 30, 60);
         fill(255, 150, 0, 150);
         ellipse(e.x, e.y + e.size * 0.5, e.size * 0.3, e.size * 0.6);
 
-
+        // Remove enemy once it moves off-screen
         if (e.y > height + 40) e.alive = false;
 
-
+        // Red enemy collision → Game Over
         if (e.type === "red" && dist(e.x, e.y, planeX, planeY) < planeSize / 2 + e.size / 2) {
             game1Stage = "end";
             return;
@@ -970,12 +1081,15 @@ function runGame1() {
     drawGradientBackground();
     runRainBackground();
 
+    // ===== START SCREEN =====
     if (game1Stage === "start") {
 
         background(255, 240, 200);
         fill(0);
         textSize(32);
+        textAlign(CENTER, CENTER);
         text("After-Rain Holiday", width / 2, height / 2 - 120);
+
         textSize(20);
         text("Level One", width / 2, height / 2 - 80);
 
@@ -984,145 +1098,107 @@ function runGame1() {
         text("Yellow enemy = +3s", width / 2, height / 2 + 20);
         text("Red enemy = deadly", width / 2, height / 2 + 50);
 
-        // ===== FIX BUTTON ALIGNMENT =====
+
         rectMode(CENTER);
 
-        let btnX = width / 2;
-        let btnY = height / 2 + 140;
-
-        fill(255, 200, 200);
-        rect(btnX, btnY, 220, 80, 20);
-
+        // Start 
+        let startX = width / 2;
+        let startY = height / 2 + 140;
+        fill(255, 180, 220);
+        rect(startX, startY, 220, 80, 20);
         fill(0);
         textSize(28);
-        textAlign(CENTER, CENTER);
-        text("Start", btnX, btnY);
+        text("Start", startX, startY);
+
+        // Back to Menu 
+        let backX = width / 2;
+        let backY = height / 2 + 240;
+        fill(255, 180, 180);
+        rect(backX, backY, 200, 60, 15);
+        fill(0);
+        textSize(26);
+        text("Back to Menu", backX, backY);
 
         rectMode(CORNER);
+
         return;
     }
-
 
     // ======== PLAY SCREEN ========
     if (game1Stage === "play") {
         updateBulletsGame1();
-
-        planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, 850);
-        drawPlane1();
-
-        if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
         updateEnemies1();
-
-        // ===== COMBO TIMEOUT =====
-        if (game1Combo > 0 && millis() - game1ComboTimer > game1ComboDuration) {
-            game1Combo = 0;
-        }
-
-        // ===== BIG COMBO EFFECT =====
-        if (game1Combo > 1) {
-            // screen flash
-            comboFlashAlpha = 120;
-
-            // enlarge combo text
-            comboScale = 1.5;
-        }
-
-        // decay flash
-        comboFlashAlpha = max(0, comboFlashAlpha - 4);
-        comboScale = lerp(comboScale, 1, 0.1);
-
-        // ===== SCREEN FLASH =====
-        if (comboFlashAlpha > 0) {
-            noStroke();
-            fill(255, 220, 0, comboFlashAlpha);
-            rect(0, 0, width, height);
-        }
-
-        // ===== COMBO TEXT =====
-        if (game1Combo > 1) {
-            push();
-            textAlign(CENTER, CENTER);
-            textSize(40 * comboScale);
-            fill(255, 180, 0);
-            text("COMBO x" + game1Combo, width / 2, 80);
-            pop();
-        }
-
-        // ===== UI =====
-        fill(255);
-        textSize(22);
-        textAlign(LEFT, TOP);
-        text("Score: " + game1Score + " / 18", 20, 50);
-
-        textAlign(RIGHT, TOP);
-        fill(255, 255, 0);
-        let elapsed = millis() - game1StartTime;
-        let remaining = max(0, (game1Timer * 1000 - elapsed) / 1000);
-        text("Time: " + remaining.toFixed(1) + "s", width - 20, 50);
-
-        // ===== CLEAR LEVEL =====
-        if (game1KillCount >= 18) {
-            level1Cleared = true;
-            stage = "game2";
-            game2Stage = "start";
-            enemies = [];
-            bullets = [];
-            return;
-        }
-
-        // ===== TIME OUT =====
-        if (remaining <= 0) {
-            timeOver = true;
-            gameOver = false;
-            game1Stage = "end";
-        }
     }
 
-    // ======== END SCREEN ========
-    if (game1Stage === "end") {
-        if (!gameOver && !winMusic.isPlaying()) {
-            bgm1.stop();
-            playWinMusic();
-        }
-        background(0);
+    // Move plane (smooth)
+    planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, 850);
+    drawPlane1();
+
+    if (frameCount % enemySpawnInterval === 0) spawnEnemy1();
+    updateEnemies1();
+
+    // ===== COMBO TIMEOUT =====
+    if (game1Combo > 0 && millis() - game1ComboTimer > game1ComboDuration) {
+        game1Combo = 0;
+    }
+
+    // ===== BIG COMBO EFFECT =====
+    if (game1Combo > 1) {
+        // screen flash
+        comboFlashAlpha = 120;
+
+        // enlarge combo text
+        comboScale = 1.5;
+    }
+
+    // decay flash
+    comboFlashAlpha = max(0, comboFlashAlpha - 4);
+    comboScale = lerp(comboScale, 1, 0.1);
+
+    // ===== SCREEN FLASH =====
+    if (comboFlashAlpha > 0) {
+        noStroke();
+        fill(255, 220, 0, comboFlashAlpha);
+        rect(0, 0, width, height);
+    }
+
+    // ===== COMBO TEXT =====
+    if (game1Combo > 1) {
+        push();
         textAlign(CENTER, CENTER);
-        textSize(55);
-        if (gameOver) fill("red");
-        else if (timeOver) fill("yellow");
-        text(gameOver ? "YOU LOSE!" : "TIME'S UP!", width / 2, height / 2 - 120);
+        textSize(40 * comboScale);
+        fill(255, 180, 0);
+        text("COMBO x" + game1Combo, width / 2, 80);
+        pop();
+    }
 
-        fill("white");
-        textSize(32);
-        text("Final Score: " + game1Score, width / 2, height / 2 + 20);
-        text("Best Score: " + game1BestScore, width / 2, height / 2 + 70);
-        textSize(24);
-        text("Click to Return", width / 2, height / 2 + 150);
+    // ===== UI =====
+    fill(255);
+    textSize(22);
+    textAlign(LEFT, TOP);
+    text("Score: " + game1Score + " / 18", 20, 50);
+
+    textAlign(RIGHT, TOP);
+    fill(255, 255, 0);
+    let elapsed = millis() - game1StartTime;
+    let remaining = max(0, (game1Timer * 1000 - elapsed) / 1000);
+    text("Time: " + remaining.toFixed(1) + "s", width - 20, 50);
+
+    // ===== CLEAR LEVEL =====
+    // ===== ENTER MONSTER STAGE =====
+
+    // ===== TIME OUT =====
+    if (remaining <= 0) {
+        timeOver = true;
+        gameOver = false;
+        game1Stage = "end";
     }
 }
-
-let simpleClouds = [];
-function initSimplePinkClouds() {
-    simpleClouds = [];
-
-    for (let i = 0; i < 5; i++) {
-        simpleClouds.push({
-            x: random(100, 800),
-            y: random(80, 300),
-            size: random(120, 180),
-            offset: random(1000)
-        });
-    }
-}
-
-
-
-
-
 
 // ===== GAME 2 =====//
 // ===== SHOOT BULLET =====
 function shootBullet() {
-    bullets.push(new Bullet(planeX, planeY - 30));
+    bullets.push(new Bullet(planeX, planeY - 30));// Shoot upward
 }
 function setupGame2() {
     let stars = [];
@@ -1136,11 +1212,11 @@ function setupGame2() {
     planeY = height - 100;
 
     // --- ALWAYS RESET ARRAYS ---
-    bullets = [];
-    enemies = [];
-    meteors = [];
-    stars2 = [];
-    sparkles = [];
+    bullets = [];      // Clear bullets
+    enemies = [];      // Clear enemies
+    meteors = [];      // Clear meteors
+    stars2 = [];       // Clear stars
+    sparkles = [];     // Clear sparkles
 
     // --- GAME VARIABLES ---
     game2Score = 0;
@@ -1150,14 +1226,15 @@ function setupGame2() {
     game2LastBulletTime = 0;
     game2Lives = 3;
     game2Over = false;
-
+    game2SplitEatCount = 0;
     planeImmune = false;
     planeImmune = false;
     planeImmuneTimer = 0;
     // --- INITIALIZE ENVIRONMENT ---
-    setupStars2();
-    initMeteors();
+    setupStars2();     // Background stars
+    initMeteors();     // Falling meteors
 
+    // Random enemy placeholder (not used during gameplay)
     enemy = {
         x: random(50, width - 50),
         y: random(50, 300),
@@ -1168,19 +1245,19 @@ function setupGame2() {
         alive: true,
         hp: 3
     };
-
+    // Extra star visuals
 
     stars = [];
     for (let i = 0; i < 20; i++) {
         stars.push(new Star(random(width), random(height)));
     }
 
-
+    // Meteor setup
     sparkles = [];
     for (let i = 0; i < meteorNum; i++) {
         meteors.push(new Meteor());
     }
-
+    // More background stars
     for (let i = 0; i < starNum; i++) {
         stars2.push(new Star());
     }
@@ -1195,11 +1272,15 @@ function setupStars2() {
             x: random(width),
             y: random(height),
             size: random(1, 3),
-            update: function () { this.y += 0.5; if (this.y > height) this.y = 0; },
-            display: function () { fill(255); ellipse(this.x, this.y, this.size); }
+            update: function () {  // Move star downward
+                this.y += 0.5; if (this.y > height) this.y = 0;
+            },
+            display: function () {// Draw star
+                fill(255); ellipse(this.x, this.y, this.size);
+            }
         });
     }
-    sparkles = [];
+    sparkles = [];// Reset sparkles
 }
 
 
@@ -1212,9 +1293,9 @@ function initMeteors() {
 
 function drawPlane2() {
     imageMode(CENTER);
-    image(flameImg, planeX, planeY + 80, 80, 70);
+    image(flameImg, planeX, planeY + 80, 80, 70); // Flame
     fill(30, 60, 140);
-    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);
+    ellipse(planeX, planeY, planeSize * 1, planeSize * 2.8);// Body
 
     fill(30, 60, 140);
     triangle(
@@ -1234,12 +1315,50 @@ function drawPlane2() {
 // ===== GAME2 PLANE DRAW =====
 
 function runGame2() {
+
+    // =====================================
+    //  GAME 2 — START SCREEN
+    // =====================================
     if (game2Stage === "start") {
-        drawStartScreen();
+
+        background(240, 240, 255);
+
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(32);
+        text("Meteor Garden", width / 2, height / 2 - 120);
+
+        textSize(20);
+        text("Level Two", width / 2, height / 2 - 80);
+
+        text("Move mouse to dodge meteors", width / 2, height / 2 - 40);
+        text("Press SPACE to shoot", width / 2, height / 2 - 10);
+        text("You have 3 lives", width / 2, height / 2 + 20);
+
+        // ===== Start Button =====
+        rectMode(CENTER);
+        fill(200, 220, 255);
+        rect(width / 2, height / 2 + 120, 200, 70, 20);
+
+        fill(0);
+        textSize(26);
+        text("Start", width / 2, height / 2 + 120);
+
+        // ===== Back to Menu =====
+        fill(180, 240, 180);
+        rect(width / 2, height / 2 + 210, 220, 70, 20);
+
+        fill(0);
+        textSize(24);
+        text("Back to Menu", width / 2, height / 2 + 210);
+
+        rectMode(CORNER);
+
+        return;
     } else if (game2Stage === "play") {
         background(0);
 
-
+        // Background stars
         for (let s of stars2) {
             s.update();
             s.display();
@@ -1249,12 +1368,12 @@ function runGame2() {
         planeX = constrain(lerp(planeX, mouseX, 0.1 * planeSpeed), 50, width - 50);
         drawPlane2();
 
-
+        // Bullets
         for (let i = bullets.length - 1; i >= 0; i--) {
             bullets[i].move();
             bullets[i].show();
 
-
+            // Bullet hits enemy
             for (let enemy of enemies) {
                 if (!enemy.alive) continue;
                 let d = dist(bullets[i].x, bullets[i].y, enemy.x, enemy.y);
@@ -1267,13 +1386,20 @@ function runGame2() {
 
             if (bullets[i].toDelete) bullets.splice(i, 1);
         }
+        updateEnemies();     // Enemy movement + collision
+        checkMeteors();      // Meteor collision
 
+        // ===== WIN AND AUTO GO TO GAME3 =====
+        if (game2SplitEatCount >= 18) {
+            game2Stage = "end";
+            game2Over = false;
+            game2TimeOver = false;
 
-        updateEnemies();
-
-
-        checkMeteors();
-
+            setTimeout(() => {
+                stage = "game3";
+                initGame3();
+            }, 1500);
+        }
         // UI
         drawUI();
     } else if (game2Stage === "end") {
@@ -1302,7 +1428,7 @@ function Meteor() {
         ellipse(this.x + 2, this.y - 2, 2 * (this.w / 3), 2 * (this.w / 3));
         ellipse(this.x + 4, this.y - 4, (this.w / 2), (this.w / 2));
         ellipse(this.x + 7, this.y - 7, (this.w / 3), (this.w / 3));
-
+        // Meteor tail
         this.tailAlpha = map(this.y, 0, height, 70, 10);
         fill(this.r, this.g, this.b, this.tailAlpha);
         beginShape();
@@ -1329,17 +1455,17 @@ function drawStartScreen() {
     fill(255);
     textAlign(CENTER, CENTER);
     textSize(50);
-    text("GAME 2", width / 2, height / 2 - 120);
+    text("GAME 2", width / 2, height / 2 - 180);
 
     textSize(24);
     text(
         "Rules:\n" +
-        "• Avoid red enemies—they are deadly\n" +
-        "• You have 3 lives in Level 2\n" +
-        "• Try your best!",
+        "• Avoid red enemies — they kill instantly\n" +
+        "• Other enemies reduce your lives (you have 3)\n" +
+        "• Yellow enemies give bonus time\n" +
+        "• Eat 18 split balls to clear the level!",
         width / 2, height / 2 - 40
     );
-
     // Start 
     fill(255, 204, 255);
     rectMode(CENTER);
@@ -1422,9 +1548,9 @@ class Sparkle {
 
 function spawnEnemy() {
     console.log("spawnEnemy called");
-    game2EnemyCount++;
+    game2EnemyCount++; // Count total enemies spawned
 
-
+    // 25% chance → red-split enemy
     if (random() < 0.25) {
         enemies.push(new RedSplitEnemy(random(50, width - 50), -40, 50, 0));
         return;
@@ -1433,34 +1559,34 @@ function spawnEnemy() {
 
     let r = random();
     let type, color;
-
+    // Every 6th enemy → yellow bonus
     if (game2EnemyCount % 6 === 0) {
         type = "yellow";
         color = "#ffe600";
-
+        // 30% chance → red homing enemy
     } else if (r < 0.3) {
         type = "red";
         color = "#ff0033";
-
+        // Otherwise → normal bouncing enemy
     } else {
         type = "normal";
         color = "#ffffff";
     }
-
+    // Enemy object
     let enemy = {
         x: random(50, width - 50),
         y: random(-40, -100),
         size: 40,
         xspeed: random(-4, 4),
         yspeed: random(-4, 4),
-        speed: random(2, 5),
+        speed: random(4, 8),
         alive: true,
         absorbing: false,
         type: type,
         color: color,
-        hp: type === "red" ? 3 : 1
+        hp: type === "red" ? 3 : 1 // Red enemies take more hits
     };
-
+    // Prevent too-slow movement
     if (abs(enemy.xspeed) < 1) enemy.xspeed = 2;
     if (abs(enemy.yspeed) < 1) enemy.yspeed = -2;
 
@@ -1469,6 +1595,7 @@ function spawnEnemy() {
 
 
 function updateEnemies() {
+    // Spawn enemy every 60 frames
     if (frameCount % 60 === 0) {
         spawnEnemy();
     }
@@ -1477,25 +1604,28 @@ function updateEnemies() {
     for (let i = enemies.length - 1; i >= 0; i--) {
         let e = enemies[i];
         if (!e.alive) { enemies.splice(i, 1); continue; }
-
+        // Red-split special enemy
         if (e.type === "redSplit") {
             e.move();
             e.show();
             continue;
         }
-
+        // Normal enemy bounces around screen
         if (e.type === "normal") {
             e.x += e.xspeed; e.y += e.yspeed;
             if (e.x > width - e.size / 2 || e.x < e.size / 2) e.xspeed *= -1;
             if (e.y > height - e.size / 2 || e.y < e.size / 2) e.yspeed *= -1;
+            // Red enemy → chases player + deadly on touch
         } else if (e.type === "red") {
             e.y += e.speed;
             e.x = lerp(e.x, planeX, 0.03);
+            // Red hits player → immediate lose
             if (dist(e.x, e.y, planeX, planeY) < 40) {
                 game2Over = true;
                 game2Stage = "end";
             }
             if (e.y > height + 50) e.alive = false;
+            // Yellow → simple falling bonus
         } else if (e.type === "yellow") {
             e.y += e.speed;
             if (e.y > height + 50) e.alive = false;
@@ -1511,15 +1641,15 @@ function updateEnemies() {
                 game2Stage = "end";
             }
         }
-
+        // Draw enemy
         fill(e.color);
         ellipse(e.x, e.y, e.size);
     }
 }
 
 function resetGame2() {
-    bullets = [];
-    enemies = [];
+    bullets = [];          // Clear bullets
+    enemies = [];          // Clear enemies
     game2KillCount = 0;
     game2Score = 0;
     game2Over = false;
@@ -1528,7 +1658,7 @@ function resetGame2() {
     planeY = height - 200;
     game2StartTime = millis();
 
-    initMeteors();
+    initMeteors(); // Reset meteors
 }
 
 function initMeteors() {
@@ -1543,7 +1673,7 @@ function Wave() {
         if (frameCount % 4 === 0) yoff += 0.01;
         let xoff = 10;
         colorMode(HSB);
-        fill(248, 71, 150);
+        fill(248, 71, 150);// Pink wave color
         beginShape();
         for (let x = 0; x < width; x += 17) {
             let offset = map(noise(xoff, yoff), 0, 1, -60, 60);
@@ -1563,29 +1693,34 @@ function Wave() {
 // ===== METEORS =====
 function checkMeteors() {
     for (let m of meteors) {
-        m.show();
-        m.move();
+        m.show();     // Draw meteor
+        m.move();     // Update position
+        // Meteor hits player (unless immune)
         if (dist(m.x, m.y, planeX, planeY) < 40 && !planeImmune) {
-            game2Lives--;
-            planeImmune = true;
+            game2Lives--;                 // Lose one life
+            planeImmune = true;// Temporary invincibility
             planeImmuneTimer = millis();
-            if (game2Lives <= 0) {
+            if (game2Lives <= 0) {// Game over
                 game2Over = true;
                 game2Stage = "end";
             }
             m.y = -200;
         }
+        // Off-screen → reset
         if (m.y > height + 120) m.reset();
     }
 
-
+    // Remove invincibility after 2 seconds
     if (planeImmune && millis() - planeImmuneTimer > 2000) planeImmune = false;
 }
 // ===== TIME =====
 function checkTime() {
     let elapsed = millis() - game2StartTime;
     let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
-    if (remaining <= 0) { game2TimeOver = true; game2Stage = "end"; }
+    // Time runs out → end game
+    if (remaining <= 0) {
+        game2TimeOver = true; game2Stage = "end";
+    }
 }
 
 
@@ -1593,16 +1728,16 @@ function checkTime() {
 function drawUI() {
     let elapsed = millis() - game2StartTime;
     let remaining = max(0, (game2BaseTimeMs + game2BonusTimeMs - elapsed) / 1000);
-
+    //Time 
     fill(255, 255, 0);
     textAlign(CENTER, TOP);
     textSize(30);
     textSize(22);
     text("Time: " + remaining.toFixed(1) + "s", width / 2, 50);
-
+    // Kill coun
     textAlign(LEFT, TOP);
     text("Kills: " + game2KillCount + " / 18", 20, 50);
-
+    // Encouragement message
     if (game2KillCount >= 7 && game2KillCount < 18) {
         push();
         noStroke();
@@ -1614,12 +1749,13 @@ function drawUI() {
         textAlign(CENTER, TOP);
         text("Almost there!", width / 2, 90);
     }
-
+    // Level complete message
     if (game2KillCount >= 18) {
         textSize(32);
         fill(255, 255, 0);
         text("Level Clear!", width / 2 - 50, height / 2 - 30);
     }
+    // Lives
     textAlign(RIGHT, TOP);
     fill(255);
     textSize(28);
@@ -1631,9 +1767,9 @@ class Bullet {
     constructor(x, y, speed = 10, size = 10) {
         this.x = x;
         this.y = y;
-        this.speed = speed;
+        this.speed = speed; // Bullet speed upward
         this.size = size;
-        this.toDelete = false;
+        this.toDelete = false; // Mark for removal
     }
 
     move() {
@@ -1654,13 +1790,13 @@ class RedSplitEnemy {
         this.size = size;
         this.generation = generation;
 
-        this.speedY = random(2, 4);
-        this.speedX = random(-2, 2);
+        this.speedY = random(4, 7);
+        this.speedX = random(-4, 4);
 
         this.type = "redSplit";
         this.alive = true;
 
-
+        // Color varies by generation
         if (generation === 0) this.color = "#673b43ff";
         else if (generation === 1) this.color = "#ff55b2ff";
         else this.color = "#ff99aa";
@@ -1669,7 +1805,7 @@ class RedSplitEnemy {
     move() {
         this.y += this.speedY;
         this.x += this.speedX;
-
+        // Bounce horizontally
         if (this.x < this.size / 2 || this.x > width - this.size / 2) {
             this.speedX *= -1;
         }
@@ -1684,13 +1820,14 @@ class RedSplitEnemy {
     }
 }
 function handleHit(enemy) {
+    game2SplitEatCount++;// Count all kills (for level clear)
     if (!enemy.alive) return;
 
-
+    // ===== RED SPLIT ENEMY =====
     if (enemy.type === "redSplit") {
 
 
-
+        // Split into 2 smaller ones (max generation = 2)
         if (enemy.generation < 2) {
             let newGen = enemy.generation + 1;
             let newSize = enemy.size * 0.6;
@@ -1707,20 +1844,21 @@ function handleHit(enemy) {
         return;
     }
 
-
+    // ===== NORMAL & YELLOW ENEMY =====
     enemy.alive = false;
     enemy.absorbing = true;
 
-    if (enemy.type === "normal" || enemy.type === "yellow") {
-        game2Score += 10;
-        game2KillCount++;
-    }
-
     if (enemy.type === "yellow") {
-        game2BonusTimeMs += 3000;
+        enemy.alive = false;
+        game2BonusTimeMs += 3000; // Add time bonus
+        return;
     }
 
+
+    // ===== RED ENEMY =====
     if (enemy.type === "red") {
+        enemy.alive = false;
+        // Only damage player if not immune
         if (!planeImmune) {
             game2Lives--;
             planeImmune = true;
@@ -1730,27 +1868,7 @@ function handleHit(enemy) {
                 game2Stage = "end";
             }
         }
-    }
-}
-function updateBullets() {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let b = bullets[i];
-        if (!b) continue;
-
-        b.move();
-        b.show();
-
-        for (let e of enemies) {
-            if (!e.alive) continue;
-
-            let hitRadius = e.size / 2 + b.size / 2;
-            if (dist(b.x, b.y, e.x, e.y) < hitRadius) {
-                handleHit(e);
-                b.toDelete = true;
-            }
-        }
-
-        if (b.toDelete || b.y < 0) bullets.splice(i, 1);
+        return;
     }
 }
 
@@ -1760,37 +1878,38 @@ function updateBullets() {
 
 
 // ===== GAME 3 VARS =====
-let game3Lives = 6;
-let plane3Size = 40;
-let game3Score = 0;
-let game3StartTime = 0;
-let game3Target = 20;
-let game3Time = 80;
-let game3Stage = "start";   // start → play → win/lose
-let game3BestScore = 0;
-let bgMeteors = [];
-let planeX3, planeY3;
-let bullets3 = [];
-let enemies3 = [];
-let lastBulletTime3 = 0;
-this.isRage = false;
-this.fireTimer = 0;
+let game3Lives = 6;          // Player lives
+let plane3Size = 40;         // Plane size
+let game3Score = 0;          // Current score
+let game3StartTime = 0;      // Game start time (for timer)
+let game3Target = 20;        // Score needed to win
+let game3Time = 80;          // Time limit (seconds)
+let game3Stage = "start";    // Game stage: start → play → win/lose
+let game3BestScore = 0;      // Best score
+let bgMeteors = [];          // Background meteors
+
+let planeX3, planeY3;        // Plane position
+let bullets3 = [];           // Bullets array
+let enemies3 = [];           // Enemy array
+let lastBulletTime3 = 0;     // Bullet cooldown
+
+this.isRage = false;         // Boss rage mode
+this.fireTimer = 0;          // Boss attack timer
+let game3BackgroundImg;
 
 
 
-
-// ===== INIT =====
 function initGame3() {
-    game3Stage = "start";
-    planeX3 = width / 2;
-    planeY3 = height - 150;
-    bullets3 = [];
-    enemies3 = [];
-    game3Score = 0;
-    game3Lives = 6;
-    setupBackgroundMeteors();
-
+    game3Stage = "start";       // Go to start page
+    planeX3 = width / 2;        // Reset plane X
+    planeY3 = height - 150;     // Reset plane Y
+    bullets3 = [];              // Clear bullets
+    enemies3 = [];              // Clear enemies
+    game3Score = 0;             // Reset score
+    game3Lives = 6;             // Reset lives
+    setupBackgroundMeteors();   // Initialize background
 }
+
 
 // ===== START SCREEN =====
 function drawGame3Start() {
@@ -1804,11 +1923,11 @@ function drawGame3Start() {
     fill(200);
     text(
         "Rules:\n" +
-        "• Pink enemies – touching them will deduct 1 point.\n" +
-        "• Blue enemies – touching them will deduct 1 point.\n" +
+        "• Pink enemies – touching them will cost 1 life.\n" +
+        "• Blue enemies – touching them will cost 1 life.\n" +
         "• Red enemies – instant death.\n\n" +
         "You have 6 lives.\n" +
-        "The final boss is extremely tough. Be patient and keep shooting.",
+        "The final boss is very tough. Be patient and keep shooting!",
         width / 2,
         height / 2 - 40
     );
@@ -1820,9 +1939,9 @@ function drawPlane3() {
 
     noStroke();
     fill(30, 60, 140);
-
+    // Plane body
     ellipse(planeX3, planeY3, plane3Size * 1, plane3Size * 2.8);
-
+    // Wings
     triangle(
         planeX3 - plane3Size, planeY3 + 25,
         planeX3 + plane3Size, planeY3 + 25,
@@ -1838,16 +1957,52 @@ function drawPlane3() {
 
 function runGame3() {
 
-    // ===== START =====
+    // ================================
+    //        GAME 3 START SCREEN
+    // ================================
     if (game3Stage === "start") {
-        drawGame3Start();
+
+        background(230);
+
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(36);
+        text("Boss Garden", width / 2, height / 2 - 140);
+
+        textSize(22);
+        text("Level Three", width / 2, height / 2 - 100);
+
+        textSize(18);
+        text("Move mouse to control your ship", width / 2, height / 2 - 40);
+        text("Press SPACE to shoot", width / 2, height / 2 - 10);
+        text("Defeat the Boss to win!", width / 2, height / 2 + 20);
+
+        // ===== Start Button =====
+        rectMode(CENTER);
+        fill(200, 255, 200);
+        rect(width / 2, height / 2 + 160, 220, 70, 20);
+
+        fill(0);
+        textSize(28);
+        text("Start", width / 2, height / 2 + 160);
+
+        // ===== Back to Menu =====
+        fill(255, 190, 120);
+        rect(width / 2, height / 2 + 250, 220, 70, 20);
+
+        fill(0);
+        textSize(24);
+        text("Back to Menu", width / 2, height / 2 + 250);
+
+        rectMode(CORNER);
+
         return;
     }
 
     // ===== PLAY =====
     if (game3Stage === "play") {
 
-        drawGame3Background();
+        drawGame3Background();// Draw gradient + meteors
 
         // Timer
         let elapsed = (millis() - game3StartTime) / 1000;
@@ -2002,7 +2157,7 @@ class Bullet3 {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speed = 12;
+        this.speed = 12;// Fast bullet
         this.size = 10;
         this.active = true;
     }
@@ -2033,17 +2188,18 @@ function setupBackgroundMeteors() {
 }
 // ===== BACKGROUND =====
 function drawGame3Background() {
-
+    // Vertical gradient (black → white)
     for (let y = 0; y < height; y++) {
         let c = map(y, 0, height, 0, 255);
         stroke(c);
         line(0, y, width, y);
     }
-
+    // Background meteors
     for (let m of bgMeteors) {
         m.update();
         m.show();
     }
+    noStroke();
 }
 
 class BackgroundMeteor {
@@ -2056,7 +2212,7 @@ class BackgroundMeteor {
         this.offset = random(TWO_PI);
         this.craters = [];
 
-
+        // Random crater holes
         let craterCount = floor(random(4, 10));
         for (let i = 0; i < craterCount; i++) {
             this.craters.push({
@@ -2069,21 +2225,21 @@ class BackgroundMeteor {
 
     update() {
 
-        this.y += this.speedY;
+        this.y += this.speedY; // Fall
 
 
-        this.x += this.speedX;
+        this.x += this.speedX;  // Drift
 
 
-        this.x += sin(frameCount * 0.01 + this.offset) * 0.5;
+        this.x += sin(frameCount * 0.01 + this.offset) * 0.5;// Wobble
 
-
+        // Reset when off screen
         if (this.y > height + this.size) {
             this.y = -this.size;
             this.x = random(width);
         }
 
-
+        // Keep slightly off screen margins
         this.x = constrain(this.x, -50, width + 50);
     }
 
@@ -2112,8 +2268,8 @@ class Enemy3 {
         this.x = random(50, width - 50);
         this.size = 40;
 
-        this.speedY = random(2.0, 3.0);
-        this.speedX = random(2.0, 3.5);
+        this.speedY = random(4.0, 6.0);
+        this.speedX = random(3.0, 5.0);
 
         this.alive = true;
         this.angle = 0;          // for spin enemy
@@ -2136,19 +2292,19 @@ class Enemy3 {
             this.amplitude = random(80, 140);
 
         } else if (r < 0.95) {
-
+            // Pink sinus movement
             this.type = "blue";
             this.color = "#66ccff";
             this.jumpTimer = 0;
 
         } else {
-
+            // Boss enemy
             this.type = "boss";
             this.color = "#aa88ff";
             this.size = 70;
             this.hp = 3;  // 3 hits to kill
-            this.speedY = random(0.8, 1.5);
-            this.speedX = random(1.5, 2.5) * (random() < 0.5 ? -1 : 1);
+            this.speedY = random(2.5, 3.8);
+            this.speedX = random(4.0, 6.0) * (random() < 0.5 ? -1 : 1);
         }
     }
 
