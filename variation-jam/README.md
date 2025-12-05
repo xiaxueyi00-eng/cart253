@@ -1,6 +1,6 @@
 # Game Time 
 Author : xueyi xia 
-[View this project online](URL_FOR_THE_RUNNING_PROJECT)
+[View this project online](https://xiaxueyi00-eng.github.io/cart253/variation-jam/)
 
 ## Description
 Game time is a composition of the project that includes three games and three levels, and every game has a different visual style, enemy, and rules. The player can choose on the main menu.
