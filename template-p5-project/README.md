@@ -13,8 +13,13 @@ This program's target is to make players learn through progressively escalating 
 
 	
 ## Screenshot(s)
-Below are screenshots showing the gameplay of each stage in the project:
-> (assets/images/images.jpeg)
+Below are screenshots showcasing the gameplay of each stage in the project:
+> (assets/images/home.png)
+>(assets/images/images.jpeg)
+>(assets/images/game1.png)
+>(assets/images/game2-image.png)
+>(assets/images/game3-image.png)
+The game opens with a soft cloud-opening animation that reveals the main menu, creating a warm and inviting start to the player’s experience.
 
 ## Attribution
 
