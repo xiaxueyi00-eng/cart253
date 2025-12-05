@@ -398,7 +398,7 @@ function draw() {
 
 
     // ===== GAME1 END SCREEN =====
-    if (game1Stage === "end") {
+    if (stage === "game1" && game1Stage === "end") {
 
         background(0);
 
@@ -991,13 +991,17 @@ function updateEnemies1() {
         if (e.type === "red") {
             e.x = lerp(e.x, planeX, 0.02);
         }
-        // Draw enemy body
-        fill(e.color);
-        ellipse(e.x, e.y, 30, 60);
-        fill(255, 150, 0, 150);  // Glow / tail
-        ellipse(e.x, e.y + e.size * 0.5, e.size * 0.3, e.size * 0.6);
-        // Remove if moved off-screen
-        if (e.y > height + 40) e.alive = false;
+        // Draw enemy
+        if (e.type === "normal") {
+            stroke(255);
+            strokeWeight(3);
+            fill("#88ddff");
+            ellipse(e.x, e.y, e.size * 1.2);
+            noStroke();
+        } else {
+            fill(e.color);
+            ellipse(e.x, e.y, e.size);
+        }
     }
 }
 
@@ -1582,7 +1586,7 @@ function spawnEnemy() {
         type = "yellow";
         color = "#ffe600";
         // 30% chance → red homing enemy
-    } else if (r < 0.3) {
+    } else if (r < 0.1) {
         type = "red";
         color = "#ff0033";
         // Otherwise → normal bouncing enemy
@@ -1628,13 +1632,8 @@ function updateEnemies() {
             e.show();
             continue;
         }
-        // Normal enemy bounces around screen
-        if (e.type === "normal") {
-            e.x += e.xspeed; e.y += e.yspeed;
-            if (e.x > width - e.size / 2 || e.x < e.size / 2) e.xspeed *= -1;
-            if (e.y > height - e.size / 2 || e.y < e.size / 2) e.yspeed *= -1;
-            // Red enemy → chases player + deadly on touch
-        } else if (e.type === "red") {
+        // Red enemy → chases player + deadly on touch
+        else if (e.type === "red") {
             e.y += e.speed;
             e.x = lerp(e.x, planeX, 0.03);
             // Red hits player → immediate lose
@@ -1659,12 +1658,12 @@ function updateEnemies() {
                 game2Stage = "end";
             }
         }
-        // Draw enemy
+
+        // Draw enemy (no normal type anymore)
         fill(e.color);
         ellipse(e.x, e.y, e.size);
     }
 }
-
 function resetGame2() {
     bullets = [];          // Clear bullets
     enemies = [];          // Clear enemies
