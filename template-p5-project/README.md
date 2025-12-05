@@ -1,23 +1,23 @@
-# Game Time 
+## 
 Author : xueyi xia 
 [View this project online](URL_FOR_THE_RUNNING_PROJECT)
 
 ## Description
 Game time is a composition of the project that includes three games and three levels, and every game has a different visual style, enemy, and rules. The player can choose on the main menu.
 The game is primarily controlled by moving the plane with the mouse and shooting using the space key. Each level has its own unique design.
-- Game 1 : Rain day theme , player need shoot down enemies within a time limit while avoiding deadly red aircraft.
-- Game 2: Space setting, have fission enemy and need be careful the meteor shot across the sky!! if you get hit by a meteor, you will lose one live.
-- Game 3: I call this game “The Ultimate Nightmare", the final boss level, have different enemies (revolve, jump and sinusoidal movement) also boss that enters a rage mode.
+> Game 1 : Rain day theme , player need shoot down enemies within a time limit while avoiding deadly red aircraft.
+> Game 2: Space setting, have fission enemy and need be careful the meteor shot across the sky!! if you get hit by a meteor, you will lose one live.
+> Game 3: I call this game “The Ultimate Nightmare", the final boss level, have different enemies (revolve, jump and sinusoidal movement) also boss that enters a rage mode.
 This program's target is to make players learn through progressively escalating challenges, visual changes, and changes in pacing, from relaxed to intense and from normal shooting to boss battles, giving the entire experience a complete and cohesive gameplay rhythm.
 
 	
 ## Screenshot(s)
 Below are screenshots showcasing the gameplay of each stage in the project:
-> ![Project Screenshot](assets/images/home.png)
-![Project Screenshot](assets/images/images.jpeg)
->![Project Screenshot](assets/images/game1.png)
->![Project Screenshot](assets/images/game2-image.png)
->![Project Screenshot](assets/images/game3-image.png)
+> (assets/images/home.png)
+>(assets/images/images.jpeg)
+>(assets/images/game1.png)
+>(assets/images/game2-image.png)
+>(assets/images/game3-image.png)
 The game opens with a soft cloud-opening animation that reveals the main menu, creating a warm and inviting start to the player’s experience.
 
 ## Attribution

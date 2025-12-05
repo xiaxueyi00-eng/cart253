@@ -1,26 +1,17 @@
 /**
  * Game Time
  * Author: xueyi
- * A three-stage flying game collection featuring different challenges,
- * enemy behaviors, and time-based mechanics. Each stage presents a unique
- * variation on movement, shooting, and survival.
+ * 
+ * Game time is a composition of the project that includes
+ *  three games and three levels, and every game has a different 
+ * visual style, enemy, and rules. The player can choose on the main menu.
+ * The game is primarily controlled by moving the plane with the mouse and
+ * shooting using the space key. Each level has its own unique design.
  *
- * GAME 1 — After-Rain Holiday
- * • Shoot black enemies to gain points
- * • Yellow enemies grant +3 seconds
- * • Red enemies are deadly on contact
- * • Goal: Survive the countdown and achieve the highest score
- *
- * GAME 2 — Meteor Garden
- * • Dodge falling meteors while shooting split objects
- * • Objects break into smaller parts when hit
- * • Player has 3 lives
- * • Goal: Clear enough targets to advance
- *
- * GAME 3 — Boss Garden
- * • Face a moving boss that shoots homing projectiles
- * • Different enemy types appear with distinct movement patterns
- * • Goal: Defeat the boss while avoiding all incoming attacks
+ * The central menu shows three flower-shaped buttons arranged in a circle:
+ * • Game 1 – After-Rain Holiday
+ * • Game 2 – Meteor Garden
+ * • Game 3 – Final Flight
  *
  * Controls:
  * Move mouse → control the plane
@@ -28,7 +19,7 @@
  *
  * Built with p5.js
  * https://p5js.org/
- 
+ *
  */
 
 
