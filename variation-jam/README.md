@@ -16,8 +16,8 @@ Below are screenshots showcasing the gameplay of each stage in the project:
 > ![Project Screenshot](assets/images/home.png)
 ![Project Screenshot](assets/images/images.jpeg)
 >![Project Screenshot](assets/images/game1.png)
->![Project Screenshot](assets/images/game2-image.png)
->![Project Screenshot](assets/images/game3-image.png)
+>![Project Screenshot](assets/images/game2-image.jpeg)
+>![Project Screenshot](assets/images/game3-image.jpeg)
 The game opens with a soft cloud-opening animation that reveals the main menu, creating a warm and inviting start to the player’s experience.
 
 ## Attribution
