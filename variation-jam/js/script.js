@@ -1241,17 +1241,16 @@ function setupGame2() {
     sparkles = [];     // Clear sparkles
 
     // --- GAME VARIABLES ---
-    game2Score = 0;
-    game2KillCount = 0;
-    game2EnemyCount = 0;
-    game2BonusTimeMs = 0;
-    game2LastBulletTime = 0;
-    game2Lives = 3;
-    game2Over = false;
-    game2SplitEatCount = 0;
-    planeImmune = false;
-    planeImmune = false;
-    planeImmuneTimer = 0;
+    game2Score = 0;           // Score (not used for level clear now)
+    game2KillCount = 0;       // Legacy counter (can remove if unused)
+    game2EnemyCount = 0;      // Number of enemies spawned
+    game2BonusTimeMs = 0;     // Extra time from yellow enemies
+    game2LastBulletTime = 0;  // Bullet cooldown
+    game2Lives = 3;           // Player lives
+    game2Over = false;        // Game over state
+    game2SplitEatCount = 0;   //kill-count used for level progress
+    planeImmune = false;      // Player temporary invincibility
+    planeImmuneTimer = 0;     // Invincibility timer
     // --- INITIALIZE ENVIRONMENT ---
     setupStars2();     // Background stars
     initMeteors();     // Falling meteors
@@ -1428,7 +1427,8 @@ function runGame2() {
         drawEndScreen();
     }
 }
-
+// ===================== METEOR CLASS =====================
+// Creates falling meteors with a glowing tail effect
 function Meteor() {
     this.x = random(width);
     this.y = random(-3, -10);
@@ -1440,7 +1440,7 @@ function Meteor() {
     this.origX = this.x;
     this.origY = this.y;
     this.tailAlpha = 100;
-
+    // Draw the meteor and its glowing tail
     this.show = function () {
         fill(250, 70);
         ellipse(this.x, this.y, this.w, this.w);
@@ -1460,11 +1460,12 @@ function Meteor() {
         vertex(this.origX - this.w / 4, this.origY - this.w / 4);
         endShape(CLOSE);
     }
-
+    // Meteor movement
     this.move = function () {
         this.x -= this.speed;
         this.y += this.speed;
     }
+    // Reset meteor after leaving the screen
     this.reset = function () {
         this.x = random(width);
         this.y = random(-200, -50);
@@ -1472,6 +1473,8 @@ function Meteor() {
         this.origY = this.y;
     }
 }
+// ===================== GAME 2 START SCREEN =====================
+// Draws the start page for Game 2
 function drawStartScreen() {
     background(4, 159, 266);
     fill(255);
@@ -1496,7 +1499,7 @@ function drawStartScreen() {
     textSize(28);
     text("START", width / 2, height / 2 + 60);
 }
-
+// ===================== GAME 2 END SCREEN =====================
 function drawEndScreen() {
     background(0);
     textSize(55);
@@ -1516,6 +1519,8 @@ function drawEndScreen() {
     textSize(24);
     text("Click to Return", width / 2, height / 2 + 150);
 }
+// ===================== BASIC ENEMY CLASS =====================
+// Simple falling red enemy (used mainly as placeholder/test)
 class Enemy {
     constructor(x, y) {
         this.x = x;
@@ -1534,6 +1539,8 @@ class Enemy {
         ellipse(this.x, this.y, this.size);
     }
 }
+// ===================== STAR CLASS =====================
+// Flickering stars for the background
 class Star {
     constructor() {
         this.x = random(width);
@@ -1548,7 +1555,7 @@ class Star {
         ellipse(this.x, this.y, 3, 3);
     }
 }
-
+// ===================== SPARKLE CLASS =====================
 class Sparkle {
     constructor(w, h) {
         this.canvasWidth = w;
@@ -1556,14 +1563,25 @@ class Sparkle {
         this.reset();
         this.size = random(1, 6);
         this.speed = random(1, 3);
-        this.r = 255; this.g = 255; this.b = 0;
+        // Glow color (yellowish)
+        this.r = 255;
+        this.g = 255;
+        this.b = 0;
     }
     show() {
-        fill(255, 120); ellipse(this.x, this.y, this.size);
-        fill(this.r, this.g, this.b, 80); ellipse(this.x, this.y, this.size / 2);
+        fill(255, 120);
+        ellipse(this.x, this.y, this.size);
+        fill(this.r, this.g, this.b, 80);
+        ellipse(this.x, this.y, this.size / 2);
     }
-    move() { this.x -= this.speed * 0.3; this.y += this.speed; }
-    reset() { this.x = random(this.canvasWidth); this.y = random(-200, -50); }
+    move() {
+        this.x -= this.speed * 0.3;
+        this.y += this.speed;
+    }
+    reset() {
+        this.x = random(this.canvasWidth);
+        this.y = random(-200, -50);
+    }
 }
 
 // ===== ENEMIES =====
@@ -1931,20 +1949,21 @@ function drawGame3Start() {
     textSize(50);
     textAlign(CENTER, CENTER);
     text("GAME 3", width / 2, height / 2 - 280);
-
+    // Rules shown to the player
     textSize(28);
     fill(200);
     text(
         "Rules:\n" +
-        "• Pink enemies – touching them will cost 1 life.\n" +
-        "• Blue enemies – touching them will cost 1 life.\n" +
-        "• Red enemies – instant death.\n\n" +
+        "• Pink enemies - touching them will cost 1 life.\n" +
+        "• Blue enemies - touching them will cost 1 life.\n" +
+        "• Red enemies - instant death.\n\n" +
         "You have 6 lives.\n" +
         "The final boss is very tough. Be patient and keep shooting!",
         width / 2,
         height / 2 - 40
     );
 }
+// ===== Draw the player's plane =====
 function drawPlane3() {
 
     imageMode(CENTER);
@@ -1954,7 +1973,7 @@ function drawPlane3() {
     fill(30, 60, 140);
     // Plane body
     ellipse(planeX3, planeY3, plane3Size * 1, plane3Size * 2.8);
-    // Wings
+    // Left & right wings
     triangle(
         planeX3 - plane3Size, planeY3 + 25,
         planeX3 + plane3Size, planeY3 + 25,
@@ -1967,7 +1986,7 @@ function drawPlane3() {
         planeX3, planeY3 - 30
     );
 }
-
+// ===== MAIN GAME LOOP =====
 function runGame3() {
 
     // ================================
@@ -2174,25 +2193,25 @@ class Bullet3 {
         this.size = 10;
         this.active = true;
     }
-
+    // Move bullet upward
     move() {
         this.y -= this.speed;
         if (this.y < -20) this.active = false;
     }
-
+    // Draw bullet
     show() {
         fill(255, 60, 60);
         noStroke();
         ellipse(this.x, this.y, this.size);
     }
 }
-
+// Create a new bullet at the plane's position
 function shootBulletGame3() {
     bullets3.push(new Bullet3(planeX3, planeY3 - 40));
 }
 
 
-
+// ===== BACKGROUND METEORS SETUP =====
 function setupBackgroundMeteors() {
     bgMeteors = [];
     for (let i = 0; i < 6; i++) {
@@ -2214,16 +2233,16 @@ function drawGame3Background() {
     }
     noStroke();
 }
-
+// ===== Background Meteor Objects =====
 class BackgroundMeteor {
     constructor() {
         this.x = random(width);
         this.y = random(height);
         this.size = random(120, 200);
-        this.speedY = random(0.2, 0.6);
-        this.speedX = random(-0.5, 0.5);
-        this.offset = random(TWO_PI);
-        this.craters = [];
+        this.speedY = random(0.2, 0.6);// Slow falling
+        this.speedX = random(-0.5, 0.5);// Horizontal drift
+        this.offset = random(TWO_PI);// For wobble movement
+        this.craters = [];// Crater decorations
 
         // Random crater holes
         let craterCount = floor(random(4, 10));
@@ -2235,7 +2254,7 @@ class BackgroundMeteor {
             });
         }
     }
-
+    // Move meteor (fall + drift + wobble)
     update() {
 
         this.y += this.speedY; // Fall
@@ -2243,7 +2262,7 @@ class BackgroundMeteor {
 
         this.x += this.speedX;  // Drift
 
-
+        // Slight wobble movement
         this.x += sin(frameCount * 0.01 + this.offset) * 0.5;// Wobble
 
         // Reset when off screen
@@ -2255,7 +2274,7 @@ class BackgroundMeteor {
         // Keep slightly off screen margins
         this.x = constrain(this.x, -50, width + 50);
     }
-
+    // Draw meteor + craters
     show() {
         noStroke();
 
@@ -2277,10 +2296,11 @@ class BackgroundMeteor {
 // ===== ENEMY =====
 class Enemy3 {
     constructor() {
+        // Spawn position
         this.y = random(80, 250);
         this.x = random(50, width - 50);
         this.size = 40;
-
+        // Movement speeds
         this.speedY = random(4.0, 6.0);
         this.speedX = random(3.0, 5.0);
 
@@ -2295,9 +2315,9 @@ class Enemy3 {
             this.type = "spin";
             this.color = "#ff0033";
             this.rotationSpeed = random(0.15, 0.35);
-
+            // ===== Enemy Types =====
         } else if (r < 0.65) {
-
+            // Pink sinus-wave movement
             this.type = "pink";
             this.color = "#f8c7db";
             this.baseX = this.x;
@@ -2305,7 +2325,7 @@ class Enemy3 {
             this.amplitude = random(80, 140);
 
         } else if (r < 0.95) {
-            // Pink sinus movement
+            // Blue jump-movement enemy
             this.type = "blue";
             this.color = "#66ccff";
             this.jumpTimer = 0;
@@ -2320,7 +2340,7 @@ class Enemy3 {
             this.speedX = random(4.0, 6.0) * (random() < 0.5 ? -1 : 1);
         }
     }
-
+    // ===== Enemy Movement =====
     move() {
         if (this.type === "spin") {
 
@@ -2345,7 +2365,7 @@ class Enemy3 {
 
             this.y += this.speedY;
             this.x += this.speedX;
-
+            // Bounce left/right
             if (this.x < 60 || this.x > width - 60) {
                 this.speedX *= -1;
             }
@@ -2353,9 +2373,7 @@ class Enemy3 {
 
         if (this.y > height + 60) this.alive = false;
     }
-
-
-
+    // ===== Draw Enemy =====
     show() {
         noStroke();
 
@@ -2405,6 +2423,7 @@ class Enemy3 {
         ellipse(this.x, this.y, this.size);
     }
 }
+// Create new enemy
 function spawnEnemy3() {
     enemies3.push(new Enemy3());
 }
