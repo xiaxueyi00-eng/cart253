@@ -1,14 +1,13 @@
 /**
  * Game Time
- * Author: xueyi
- * 
- * Game time is a composition of the project that includes
- *  three games and three levels, and every game has a different 
- * visual style, enemy, and rules. The player can choose on the main menu.
- * The game is primarily controlled by moving the plane with the mouse and
- * shooting using the space key. Each level has its own unique design.
+ * Author: Xueyi Xia
  *
- * The central menu shows three flower-shaped buttons arranged in a circle:
+ * A game have three different levels can play,
+ * given play different gameplay experience.
+ * With each level offering unique challenges and aesthetics.
+ * The game starts with a gentle clouds part，bringing player into an otherworldly experience.
+
+ * The central menu has three flower buttons arranged in a pink sun:
  * • Game 1 – After-Rain Holiday
  * • Game 2 – Meteor Garden
  * • Game 3 – Final Flight
@@ -18,7 +17,7 @@
  * SPACE → shoot bullets
  *
  * Built with p5.js
- * https://p5js.org/
+ * https://p5js.org
  *
  */
 
