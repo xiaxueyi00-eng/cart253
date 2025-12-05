@@ -5,7 +5,7 @@
  * A game have three different levels can play,
  * given play different gameplay experience.
  * With each level offering unique challenges and aesthetics.
- * The game starts with a gentle clouds part，bringing player into an otherworldly experience.
+ *The game starts with a gentle clouds part，bringing player into an otherworldly experience.
 
  * The central menu has three flower buttons arranged in a pink sun:
  * • Game 1 – After-Rain Holiday
@@ -434,7 +434,7 @@ function draw() {
         text("Try Again", width / 2, height / 2 - 50);
 
         textSize(32);
-        text("Final Score: " + game2Score, width / 2, height / 2 + 20);
+        text("Final Score: " + game2SplitEatCount, width / 2, height / 2 + 20);
         text("Best Score: " + game2BestScore, width / 2, height / 2 + 70);
 
         textSize(24);
@@ -1754,7 +1754,7 @@ function drawUI() {
     text("Time: " + remaining.toFixed(1) + "s", width / 2, 50);
     // Kill coun
     textAlign(LEFT, TOP);
-    text("Kills: " + game2KillCount + " / 18", 20, 50);
+    text("Kills: " + game2SplitEatCount + " / 18", 20, 50);
     // Encouragement message
     if (game2KillCount >= 7 && game2KillCount < 18) {
         push();
@@ -1838,45 +1838,37 @@ class RedSplitEnemy {
     }
 }
 function handleHit(enemy) {
-    game2SplitEatCount++;// Count all kills (for level clear)
+
     if (!enemy.alive) return;
 
     // ===== RED SPLIT ENEMY =====
     if (enemy.type === "redSplit") {
 
+        // Count 1 kill
+        game2SplitEatCount++;
 
-        // Split into 2 smaller ones (max generation = 2)
+        // Split
         if (enemy.generation < 2) {
             let newGen = enemy.generation + 1;
             let newSize = enemy.size * 0.6;
-
             enemies.push(new RedSplitEnemy(enemy.x - 20, enemy.y, newSize, newGen));
             enemies.push(new RedSplitEnemy(enemy.x + 20, enemy.y, newSize, newGen));
         }
 
-        // kill original enemy
         enemy.alive = false;
-        game2Score += 10;
-        game2KillCount++;
-
         return;
     }
 
-    // ===== NORMAL & YELLOW ENEMY =====
-    enemy.alive = false;
-    enemy.absorbing = true;
-
+    // ===== YELLOW ENEMY (no kill) =====
     if (enemy.type === "yellow") {
         enemy.alive = false;
-        game2BonusTimeMs += 3000; // Add time bonus
+        game2BonusTimeMs += 3000;  // add bonus time
         return;
     }
 
-
-    // ===== RED ENEMY =====
+    // ===== RED ENEMY (no kill — hurts player) =====
     if (enemy.type === "red") {
         enemy.alive = false;
-        // Only damage player if not immune
         if (!planeImmune) {
             game2Lives--;
             planeImmune = true;
@@ -1888,10 +1880,14 @@ function handleHit(enemy) {
         }
         return;
     }
+
+    // ===== NORMAL ENEMY (Count kill) =====
+    if (enemy.type === "normal") {
+        game2SplitEatCount++;  // Count kill
+        enemy.alive = false;
+        return;
+    }
 }
-
-
-
 
 
 
